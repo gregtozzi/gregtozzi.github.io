@@ -1,144 +1,236 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Greg Tozzi's Data Science Portfolio'</title>
-		<link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
-    <link rel="stylesheet" href="css/main.css" />
-  </head>
 
-  <body>
-		<div class="container grid-lg">
-			<img src="img/hero.png" class="img-responsive">
-			<div class="divider"></div>
-			<h3>About me</h3>
-			<p>I'm a Senior military officer (Captain, U.S. Coast Guard) with an active TS/SCI clearance and a passion for the practice and promise of data science. To that end, I am in my final semester of the UC Berkeley School of Information's, Master of Information and Data Science program. I believe that data science needs to be focused on the needs of decision-makers. Dedicated and driven, I bring a proven track record of achieving remarkable results—often under extremely challenging circumstances—individually, as a collaborator, and as a leader. If you're looking for someone who turns intent into action and who brings a rare mix of sharp technical skills and deep expertise in leadership, operations, diplomacy, and strategy, let's connect.</p>
-			<p><a href = "media/Greg_Tozzi_Resume.pdf" >Read my Resume</a> | <a href="https://www.linkedin.com/in/gregorytozzi">Connect on LinkedIn</a> | <a href="mailto:greg.tozzi@ischool.berkeley.edu">Contact by Email</a></p>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Greg Tozzi: Data Scientist">
+    <meta name="author" content="Greg Tozzi">
 
-			<div class="divider"></div>
+    <title>Greg Tozzi's Data Science Portfolio</title>
 
-			<h3>Publication</h3>
+    <!-- Bootstrap Core CSS -->
+    <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet" type="text/css">
 
-			<div class="tile">
-				<div class="tile-icon">
-					<div class="example-tile-icon">
-						<i class="icon icon-file centered"></i>
-					</div>
-				</div>
-				<div class="tile-content">
-					<h5>Getting it Righter Faster | Center for a New American Security | August 2020</h5>
-					<p class="tile-subtitle">In a report published by the Center for a New American Security, a leading Washington, DC-based security policy think tank, Dr. Kaythrn McNabb Cochran and I argued that effective prediction is the cornerstone of agile decision-making. We surveyed predictive methodologies available to policymakers and presented the results of our study conducted with Good Judgment, Inc. and the U.S. Department of State.</p>
-					<div class="divider"></div>
-				</div>
-				<div class="tile-action">
-					<a href="https://www.cnas.org/publications/reports/getting-it-righter-faster">Read the Report</a>
-				</div>
-			</div>
+    <!-- Fonts -->
+    <link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'>
 
-			<h3>Projects</h3>
+    <!-- Custom Theme CSS -->
+    <link href="css/grayscale.css" rel="stylesheet">
 
-			<div class="tile">
-				<div class="tile-icon">
-					<div class="example-tile-icon">
-						<i class="icon icon-file centered"></i>
-					</div>
-				</div>
-				<div class="tile-content">
-					<h5>Visualizing San Francisco Bay Vessel Traffic</h5>
-					<p class="tile-subtitle">My team and I built a bespoke visualization of vessel traffic in San Francisco Bay using a large set of transponder data collected by the Coast Guard and provided by NOAA. Our aim was to provide professional mariners with a tool to understand vessel traffic patterns. To that end, we conducted nearly a dozen user tests and applied prioritized features using the MoSCoW framework.</p>
-					<p class="tile-subtitle">Vega-Lite | Altair | GeoPandas | Mapshaper | HTML/CSS | Javascript</p>
-					<div class="divider"></div>
-				</div>
-				<div class="tile-action">
-					<a href="https://people.ischool.berkeley.edu/~greg.tozzi/w209/">Try the Visualization</a>
-				</div>
-			</div>
+</head>
 
-			<div class="tile">
-				<div class="tile-icon">
-					<div class="example-tile-icon">
-						<i class="icon icon-file centered"></i>
-					</div>
-				</div>
-				<div class="tile-content">
-					<h5>Toward Automated Celestial Navigation with Deep Learning</h5>
-					<p class="tile-subtitle">A colleague and I set out to demonstrate that automated celestial navigation could be carried out at the edge. We built an exotic deep regression model in TensorFlow using the functional API, trained it in the cloud with a custom loss function and synthetic images we created using open source astronomy software, deployed the model to an NVIDIA Jetson TX2, and showed promising results against synthetic test images.</p>
-					<p class="tile-subtitle">Python | TensorFlow | Keras | ktrain | Bash | Docker | Edge</p>
-					<div class="divider"></div>
-				</div>
-				<div class="tile-action">
-					<a href="https://github.com/gregtozzi/deep_learning_celnav">View on GitHub</a>
-				</div>
-			</div>
+<body id="page-top" data-spy="scroll" data-target=".navbar-custom">
 
-			<div class="tile">
-				<div class="tile-icon">
-					<div class="example-tile-icon">
-						<i class="icon icon-file centered"></i>
-					</div>
-				</div>
-				<div class="tile-content">
-					<h5>Detecting Evidence of Gender Discrimination in Fijian Court Documents</h5>
-					<p class="tile-subtitle">A colleague and I built models to detect evidence of gender discrimination from court documents hand-labeled by domain experts. We explored the challenges that arise from having large variation in document sizes and content. Our modeling effort spanned word2vec to CNNs to cutting edge BERT-based transformer models.</p>
-					<p class="tile-subtitle">Python | NLP | TensorFlow | ktrain | Gensim | Huggingface | Explainable AI</p>
-					<div class="divider"></div>
-				</div>
-				<div class="tile-action">
-					<a href="https://github.com/gregtozzi/w266_project">View on GitHub</a>
-				</div>
-			</div>
+    <nav class="navbar navbar-custom navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-main-collapse">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <!-- <span style="color: #6C6; font-size: 135px;">&#x2B22;</span> -->
+                <a class="navbar-brand" a href="https://linkedin.com/in/gregorytozzi" target="_blank" rel="noopener noreferrer">
+                    <i class="fa fa-linkedin-square fa-1x"></i>  <span class="light">Connect on Linkedin</span>
+                </a>
+        
+            </div>
 
-			<div class="tile">
-				<div class="tile-icon">
-					<div class="example-tile-icon">
-						<i class="icon icon-file centered"></i>
-					</div>
-				</div>
-				<div class="tile-content">
-					<h5>Detecting Pneumonia in Pediatric Chest X-Rays with Deep Learning</h5>
-					<p class="tile-subtitle">I applied a CNN to detecting pneumonia in pediatric chest x-rays, achieving 92% accuracy. I provided visualizations of intermediate activations to give a sense of what the model is looking for.</p>
-					<p class="tile-subtitle">Python | TensorFlow | Keras | NumPy</p>
-					<div class="divider"></div>
-				</div>
-				<div class="tile-action">
-					<a href="https://github.com/gregtozzi/diagnosing_pneumonia/blob/master/Diagnosing_Pneumonia_from_Pediatric_Chest_X_Rays.ipynb">View on GitHub</a>
-				</div>
-			</div>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse navbar-right navbar-main-collapse">
+                <ul class="nav navbar-nav">
+                    <!-- Hidden li included to remove active class from about link when scrolled up past about section -->
+                    <li class="hidden">
+                        <a href="#page-top"></a>
+                    </li>
+                    <li class="page-scroll">
+                        <a href="#about">About Me</a>
+                    </li>
+                    <li class="page-scroll">
+                        <a href="#pubs">Published Work</a>
+                    </li>
+                    <li class="page-scroll">
+                        <a href="#projects">Projects</a>
+                    </li>
+               
+                    <li class="page-scroll">
+                        <a href="#contact">Contact</a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
 
-			<div class="tile">
-				<div class="tile-icon">
-					<div class="example-tile-icon">
-						<i class="icon icon-file centered"></i>
-					</div>
-				</div>
-				<div class="tile-content">
-					<h5>A/B Testing for Email Fundraising</h5>
-					<p class="tile-subtitle">My team and I conducted A/B testing of email subject and from lines to support a non-profit's end-of-year fundraising drive.</p>
-					<p class="tile-subtitle">R | data.table | knitr | Randomized Control Trials | Regression Analysis | Robust Statistics</p>
-					<div class="divider"></div>
-				</div>
-				<div class="tile-action">
-					<a href="https://github.com/gregtozzi/w241_project">View on GitHub</a>
-				</div>
-			</div>
+    <section class="intro">
+        <div class="intro-body">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-8 col-md-offset-2">
+                        <h1 class="brand-heading">Greg Tozzi</h1>
+                        <p class="intro-text">Data Scientist | Senior Military Officer | Active Clearance</p>
+                        <div class="page-scroll">
+                            <a href="#about" class="btn btn-circle">
+                                <i class="fa fa-angle-double-down animated"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-			<div class="tile">
-				<div class="tile-icon">
-					<div class="example-tile-icon">
-						<i class="icon icon-file centered"></i>
-					</div>
-				</div>
-				<div class="tile-content">
-					<h5>Crime in North Carolina</h5>
-					<p class="tile-subtitle">I conducted a classic econometric analysis of North Carolina crime data.</p>
-					<p class="tile-subtitle">R | knitr | Regression Analysis | ggplot2 | Robust Statistics</p>
-					<div class="divider"></div>
-				</div>
-				<div class="tile-action">
-					<a href="https://github.com/gregtozzi/north_carolina_crime">View on GitHub</a>
-				</div>
-			</div>
-			
-		</div>
-	</body>
+    <section id="about" class="container content-section text-justified">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2">
+                <h2>About Me</h2>
+                <p class="about-me">I'm a retiring senior military officer (Captain, U.S. Coast Guard) with an active TS/SCI clearance and a passion for the practice and promise of data science. To that end, I am in my final semester of the UC Berkeley School of Information's, Master of Information and Data Science program. I believe that data science needs to be focused on the needs of decision-makers. Dedicated and driven, I bring a proven track record of achieving remarkable results—often under extremely challenging circumstances—individually, as a collaborator, and as a leader. If you're looking for someone who turns intent into action and who brings a rare mix of sharp data science skills and deep expertise in leadership, operations, diplomacy, and strategy, let's connect.</p>
+                <p class="resume"><a href="media/Greg_Tozzi_resume.pdf">READ MY RESUME</a></p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2">
+                <h4>What I Do</h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4 col-lg-offset-2">
+                <p class="small-text"><strong>Statistical Programming and ML.</strong> Using Python with Scikit-Learn, R with caret. Dabbling in Julia to keep things interesting.</p>
+            </div>
+            <div class="col-lg-4">
+                <p class="small-text"><strong>Data Visualization.</strong> Building clean and interactive web apps using D3, Vega-Lite/Altair, and Shiny.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4 col-lg-offset-2">
+                <p class="small-text"><strong>Deep Learning.</strong> Building models in TensorFlow's sequential and functional APIs, custom loss functions, training in the cloud, and deploying to the edge.</p>
+            </div>
+            <div class="col-lg-4">
+                <p class="small-text"><strong>NLP.</strong> Classification using deep learning. Transformer models with Huggingface. Word2vec models with Gensim.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4 col-lg-offset-2">
+                <p class="small-text"><strong>Causal Inference.</strong> Designing experiments, A/B tests, randomization inference.</p>
+            </div>
+            <div class="col-lg-4">
+                <p class="small-text"><strong>Tying Data Science to Decision-Making.</strong> Explaining implications to executive leaders and driving action.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="pubs" class="container content-section text-justified">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2">
+                <h2 class="pub-header">Published Work</h2>
+                <p class="small-text"><strong>Getting it Righter, Faster</strong> | CNAS | August 2020</p>
+                <p>In a report published by the Center for a New American Security, a leading Washington, DC-based security policy think tank, Dr. Kaythrn McNabb Cochran and I argue that effective prediction is the cornerstone of agile decision-making. We survey predictive methodologies available to policymakers and present the results of a consulting engagement conducted with Good Judgment, Inc. and the U.S. Department of State. We identify key political and structural impediments to acting on model outputs and provided targeted recommendations to overcome them. Our work was informed by interviews with current and former cabinet secretaries, leaders and program managers at IARPA and In-Q-Tel, and members of the academic community.
+                </p>
+                <a href="https://www.cnas.org/publications/reports/getting-it-righter-faster" target="_blank" rel="noopener noreferrer" class="small-text">READ THE REPORT</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="projects" class="container content-section text-justified">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2">
+                <h2>Projects</h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4 col-lg-offset-2">
+                <p class="small-text"><strong>Visualizing San Francisco Bay Vessel Traffic</strong></p>
+                <p class="small-text">My team and I built a visualization of vessel traffic in San Francisco Bay using a large set of transponder data collected by the Coast Guard and provided by NOAA. Our aim was to provide professional mariners with a tool to understand vessel traffic patterns. To that end, we conducted nearly a dozen user tests with professional mariners and prioritized features using the MoSCoW framework.</p>
+                <p class="small-text">Python | Vega-Lite | Altair | GeoPandas | Mapshaper | HTML/CSS | Javascript</p>
+                <p class="small-text"><a href="https://people.ischool.berkeley.edu/~greg.tozzi/w209/" target="_blank" rel="noopener noreferrer" class="small-text">TRY THE APP</a></p>
+                <p class="small-text"><a href="https://github.com/gregtozzi/w209-ais" target="_blank" rel="noopener noreferrer">
+                    <i class="fa fa-github fa-1.25x"> VIEW THE REPO</i></a></p>
+            </div>
+            <div class="col-lg-4">
+                <p class="small-text"><strong>Toward Automated Celestial Navigation with Deep Learning</strong></p>
+                <p class="small-text">A colleague and I set out to demonstrate that automated celestial navigation could be carried out at the edge. We built an exotic deep regression model in TensorFlow using the functional API, trained it in the cloud with a custom loss function and synthetic images we created using open source astronomy software, deployed the model to an NVIDIA Jetson TX2, and showed promising results against synthetic test images.</p>
+                <p class="small-text">Python | TensorFlow | Keras | ktrain | Bash | Docker | Edge</p>
+                <p class="small-text"><a href="https://github.com/gregtozzi/deep_learning_celnav" target="_blank" rel="noopener noreferrer">
+                    <i class="fa fa-github fa-1.25x"> VIEW THE REPO</i></a></p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-4 col-lg-offset-2">
+                <p class="small-text"><strong>Detecting Evidence of Gender Discrimination in Fijian Court Documents</strong></p>
+                <p class="small-text">A colleague and I built models to detect evidence of gender discrimination from court documents hand-labeled by domain experts. We explored the challenges that arise from having large variation in document sizes and content. Our modeling effort spanned word2vec to CNNs to cutting edge BERT-based transformer models.</p>
+                <p class="small-text">Python | NLP | TensorFlow | ktrain | Gensim | Huggingface | Explainable AI</p>
+                <p class="small-text"><a href="media/fijian_gbd_report.pdf" target="_blank" rel="noopener noreferrer">READ THE REPORT</a></p>
+                <p class="small-text"><a href="https://github.com/gregtozzi/w266_project" target="_blank" rel="noopener noreferrer">
+                    <i class="fa fa-github fa-1.25x"> VIEW THE REPO</i></a></p>
+            </div>
+
+            <div class="col-lg-4">
+                <p class="small-text"><strong>A/B Testing for Email Fundraising</strong></p>
+                <p class="small-text">My team and I consulted with a non-profit to optimize their end-of-year email fundraising drive. We designed an experiment to test choices of from and subject lines, performed power calculations, provided random assignments to the client, built an analysis pipeline using the Mailchip API, and conducted statistical tests on the results. We even managed to find a statistically significant result.</p>
+                <p class="small-text">R | data.table | knitr | Causal Inference | Regression Analysis | Robust Statistics</p>
+                <p class="small-text"><a href="media/ab_test_report.pdf" target="_blank" rel="noopener noreferrer">READ THE REPORT</a></p>
+                <p class="small-text"><a href="https://github.com/gregtozzi/w266_project" target="_blank" rel="noopener noreferrer">
+                    <i class="fa fa-github fa-1.25x"> VIEW THE REPO</i></a></p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-4 col-lg-offset-2">
+                <p class="small-text"><strong>Detecting Pneumonia in Pediatric Chest X-Rays with Deep Learning</strong></p>
+                <p class="small-text">I applied a CNN to detecting pneumonia in pediatric chest x-rays, achieving 92% accuracy. I provided visualizations of intermediate activations to give a sense of what is happening in the convolutional layers.</p>
+                <p class="small-text">Python | TensorFlow | Keras | NumPy</p>
+                <p class="small-text"><a href="https://github.com/gregtozzi/diagnosing_pneumonia/blob/master/Diagnosing_Pneumonia_from_Pediatric_Chest_X_Rays.ipynb" target="_blank" rel="noopener noreferrer">
+                    <i class="fa fa-github fa-1.25x"> VIEW THE REPO</i></a></p>
+            </div>
+            <div class="col-lg-4">
+                <p class="small-text"><strong>Crime in North Carolina</strong></p>
+                <p class="small-text">I conducted a classic econometric analysis of crime data from North Carolina. I developed and compared regression models, considering the Gauss-Markov assumptions in each case and settling on a parsimonious model.</p>
+                <p class="small-text">R | knitr | Regression Analysis | ggplot2 | Robust Statistics</p>
+                <p class="small-text"><a href="media/north_carolina_crime.pdf" target="_blank" rel="noopener noreferrer">READ THE REPORT</a></p>
+                <p class="small-text"><a href="https://github.com/gregtozzi/north_carolina_crime" target="_blank" rel="noopener noreferrer">
+                    <i class="fa fa-github fa-1.25x"> VIEW THE REPO</i></a></p>
+            </div>
+        </div>
+
+        
+    </section>
+    
+    <section id="contact" class="container content-section text-justified">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2">
+                <h2>Let's Connect</h2>
+                <p class="about-me">My experiences and education outside of data science give me a unique perspective on the field and on the support it can offer decision-makers. I'd love to talk about how we can ask the right questions of your data so you can make decisions that advance your goals.</p>
+            </div>
+        </div>
+        <div class="row bottom-row">
+            <div class="col-lg-2 col-lg-offset-2">
+              <p class="small-text"><a href="https://linkedin.com/in/gregorytozzi" target="_blank" rel="noopener noreferrer">
+                    <i class="fa fa-linkedin-square fa-1x"> LinkedIn</i></a></p>
+            </div>
+            <div class="col-lg-2">
+              <p class="small-text"><a href="https://github.com/gregtozzi" target="_blank" rel="noopener noreferrer">
+                    <i class="fa fa-github fa-1x"> GitHub</i></a></p>
+            </div>
+            <div class="col-lg-2">
+              <p class="small-text"><a href="mailto:greg.tozzi@ischool.berkeley.edu">
+                    <i class="fa fa-envelope fa-1x"> email</i></a></p>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Core JavaScript Files -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="js/grayscale.js"></script>
+
+</body>
+
 </html>
+
