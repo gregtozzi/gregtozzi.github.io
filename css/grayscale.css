@@ -40,6 +40,18 @@ p {
     margin: 0 0 10px;
 }
 
+.education {
+    font-family: Montserrat, "Allerta","Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size:16px;
+    margin: 0 0 0px;
+}
+
+.education-footer {
+    font-family: Montserrat, "Allerta","Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size:16px;
+    margin: 0 0 35px;
+}
+
 .resume {
     font-family: Montserrat, "Allerta","Helvetica Neue",Helvetica,Arial,sans-serif;
     font-size:16px;
@@ -62,7 +74,7 @@ p {
 }
 
 a {
-    color: #28c3ab;
+    color: #fda428;
     -webkit-transition: all .2s ease-in-out;
     -moz-transition: all .2s ease-in-out;
     transition: all .2s ease-in-out;
@@ -71,7 +83,7 @@ a {
 a:hover,
 a:focus {
     text-decoration: none;
-    color: #176e61;
+    color: #b56e0b;
 }
 
 .light {
