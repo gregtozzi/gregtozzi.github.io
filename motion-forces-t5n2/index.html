@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"><style>body{margin:0}[hidden]{display:none!important}:root{color-scheme:light}</style>
+<title>Motion Step Checker</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: graph-paper page, one column of step cards that unlock one at a time. */
+:root{
+  --bg:#EEF3F8; --grid:#D9E3EF; --card:#FFFFFF; --ink:#12203A; --muted:#566782; --line:#C6D3E3;
+  --accent:#2457D6; --accent-ink:#FFFFFF; --hl-g:#FFE27A; --hl-q:#B9D2FF;
+  --good:#17784F; --good-bg:#E2F4EA; --bad:#B3261E; --bad-bg:#FBE9E7; --hint-bg:#FFF2C4; --hint-ink:#5A4300;
+  --display:'Bricolage Grotesque','Trebuchet MS',system-ui,sans-serif;
+  --body:'Atkinson Hyperlegible',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F1726; --grid:#18243B; --card:#172236; --ink:#E8EEF8; --muted:#9BACC6; --line:#2B3B58;
+  --accent:#7AA2FF; --accent-ink:#0B1530; --hl-g:#6E5C0F; --hl-q:#24467F;
+  --good:#5FD39A; --good-bg:#143225; --bad:#FF8B80; --bad-bg:#3A1B1B; --hint-bg:#3A3216; --hint-ink:#F2DE9A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1726; --grid:#18243B; --card:#172236; --ink:#E8EEF8; --muted:#9BACC6; --line:#2B3B58;
+  --accent:#7AA2FF; --accent-ink:#0B1530; --hl-g:#6E5C0F; --hl-q:#24467F;
+  --good:#5FD39A; --good-bg:#143225; --bad:#FF8B80; --bad-bg:#3A1B1B; --hint-bg:#3A3216; --hint-ink:#F2DE9A; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{
+  background-color:var(--bg);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  color:var(--ink); font-family:var(--body); font-size:17px; line-height:1.5;
+  padding-block:20px 56px;
+  padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,6vw,36px);line-height:1.1;margin:0;text-wrap:balance}
+.sub{color:var(--muted);margin:4px 0 0}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.label{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:0 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+button,select,input{font:inherit;color:inherit}
+.chip{background:transparent;border:1.5px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer;min-height:40px}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.chip.done::after{content:" ✓";font-weight:700}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+select{background:var(--card);border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;min-height:40px}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:8px;padding:9px 16px;font-weight:700;cursor:pointer;min-height:44px}
+.btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+details.panel summary{cursor:pointer;font-weight:700}
+details table{border-collapse:collapse;width:100%;margin-top:10px;font-size:15px}
+details td,details th{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line)}
+.tw{overflow-x:auto}
+code,.mono{font-family:var(--mono);font-weight:500;font-size:.92em}
+
+.problem{border-left:6px solid var(--accent)}
+.problem p{margin:0;font-size:19px}
+.dots{display:flex;gap:6px;margin-top:12px}
+.dot{height:8px;flex:1;border-radius:4px;background:var(--line)}
+.dot.cur{background:var(--accent)} .dot.first{background:var(--good)} .dot.retry{background:#D9A400}
+
+.step{background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.step.active{border-color:var(--accent)}
+.step.done{border-color:var(--good)}
+.shead{display:flex;gap:12px;align-items:flex-start}
+.badge{flex:none;width:30px;height:30px;border-radius:50%;background:var(--line);display:grid;place-items:center;font-weight:700;font-family:var(--mono);font-size:14px}
+.step.active .badge{background:var(--accent);color:var(--accent-ink)}
+.step.done .badge{background:var(--good);color:var(--bg)}
+.prompt{margin:0;font-weight:700;min-width:0}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{text-align:left;background:transparent;border:1.5px solid var(--line);border-radius:8px;padding:10px 12px;cursor:pointer;min-height:46px;font-family:var(--mono);font-size:16px}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-bg);color:var(--bad)}
+.opt.right{border-color:var(--good);background:var(--good-bg);color:var(--good)}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-size:15px;color:var(--muted)}
+.inwrap{display:flex;align-items:center;gap:8px}
+.inwrap input{width:100%;min-width:0;max-width:130px;background:var(--bg);border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;font-family:var(--mono);font-size:17px;min-height:44px}
+.inwrap input.ok{border-color:var(--good);background:var(--good-bg)}
+.inwrap input.no{border-color:var(--bad);background:var(--bad-bg)}
+.inwrap .u{color:var(--muted);font-family:var(--mono);font-size:15px;white-space:nowrap}
+.fb{min-height:0;border-radius:8px;padding:0;font-size:16px}
+.fb.good{background:var(--good-bg);color:var(--good);padding:10px 12px}
+.fb.bad{background:var(--bad-bg);color:var(--bad);padding:10px 12px}
+.why{background:var(--hint-bg);color:var(--hint-ink);border-radius:8px;padding:10px 12px;font-size:16px}
+.fin{text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 16px}
+.fin h2{font-family:var(--display);margin:0;font-size:26px}
+.bigscore{font-family:var(--mono);font-weight:700;font-size:34px;color:var(--good)}
+@media (prefers-reduced-motion:no-preference){.step{animation:in .25s ease-out}@keyframes in{from{transform:translateY(8px);opacity:.2}}}
+
+[hidden]{display:none!important}
+.stack{display:flex;flex-direction:column;gap:16px;min-width:0}
+.tabs{display:flex;gap:8px}
+.tab{flex:1;background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:10px;font-weight:700;cursor:pointer;min-height:48px}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.tools{display:flex;flex-wrap:wrap;gap:8px}
+.tool{border:2px solid var(--line);background:transparent;border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:700;min-height:44px}
+.tool.g[aria-pressed="true"]{background:var(--hl-g);border-color:var(--hl-g)}
+.tool.q[aria-pressed="true"]{background:var(--hl-q);border-color:var(--hl-q)}
+.sent{margin:0;line-height:2.3;font-size:19px}
+.w{background:none;border:0;border-bottom:2px dotted var(--line);padding:2px 2px;margin:0;font:inherit;cursor:pointer;color:inherit;border-radius:3px}
+.w.g{background:var(--hl-g);border-bottom-color:transparent}
+.w.q{background:var(--hl-q);border-bottom-color:transparent}
+.w.bad{outline:2px solid var(--bad)}
+.tiles,.slot{display:flex;flex-wrap:wrap;gap:8px}
+.slot{min-height:60px;border:2px dashed var(--line);border-radius:10px;padding:8px;align-items:center}
+.slot:empty::before{content:"Tap tiles below to build the formula";color:var(--muted);font-size:15px}
+.tile{font-family:var(--mono);font-size:18px;min-width:46px;min-height:46px;padding:6px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--card);cursor:pointer}
+.opt.txt{font-family:var(--body);font-size:16px;line-height:1.4}
+.tile:disabled{opacity:.35;cursor:default}
+.tile.on{background:var(--hl-q);border-color:var(--hl-q)}
+.urows{display:flex;flex-direction:column;gap:10px}
+.urow{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}
+.urow label{flex:1 1 180px;min-width:0}
+.urow select.ok{border-color:var(--good);background:var(--good-bg)}
+.urow select.no{border-color:var(--bad);background:var(--bad-bg)}
+.sl{border-top:1px solid var(--line);padding:10px 0;display:flex;flex-direction:column;gap:4px;margin-top:10px}
+.slh{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline}
+.slh code{font-size:17px;font-weight:700;color:var(--accent)}
+.slu{display:flex;flex-wrap:wrap;gap:4px 16px}
+.slr{color:var(--muted);font-size:16px}
+.qintro{display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.qintro p{margin:0}
+</style></head><body>
+
+<div class="wrap">
+  <header>
+    <h1>Motion Step Checker</h1>
+    <p class="sub">Work each problem one step at a time. Every step is checked right away, and wrong answers tell you why.</p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" data-t="p" aria-selected="true" type="button">Step-by-step problems</button>
+    <button class="tab" role="tab" data-t="q" aria-selected="false" type="button">Formula quiz</button>
+  </div>
+
+  <div id="tabProblems" class="stack">
+  <div class="panel">
+    <p class="label">Review guide problems</p>
+    <div class="chips" id="reviewChips"></div>
+    <p class="label" style="margin-top:14px">More practice with new numbers</p>
+    <div class="row">
+      <label for="typeSel" class="sr" style="position:absolute;left:-9999px">Problem type</label>
+      <select id="typeSel">
+        <option value="any">Any type</option><option value="speed">Speed</option><option value="distance">Distance</option>
+        <option value="time">Time</option><option value="accel">Acceleration</option><option value="forceA">Force: find acceleration</option>
+        <option value="forceF">Force: find force</option><option value="momentum">Momentum</option>
+      </select>
+      <button class="btn ghost" id="newBtn" type="button">New practice problem</button>
+    </div>
+  </div>
+
+  <details class="panel">
+    <summary>Formula sheet</summary>
+    <div class="tw"><table>
+      <tr><th>Find</th><th>Formula</th><th>Units</th></tr>
+      <tr><td>Speed</td><td><code>S = D ÷ T</code></td><td>m/s, km/h</td></tr>
+      <tr><td>Distance</td><td><code>D = S × T</code></td><td>m, km</td></tr>
+      <tr><td>Time</td><td><code>T = D ÷ S</code></td><td>s, min, h</td></tr>
+      <tr><td>Acceleration</td><td><code>a = (v_f − v_i) ÷ t</code></td><td>m/s²</td></tr>
+      <tr><td>Force</td><td><code>F = m × a</code></td><td>N</td></tr>
+      <tr><td>Acceleration from force</td><td><code>a = F ÷ m</code></td><td>m/s²</td></tr>
+      <tr><td>Momentum</td><td><code>p = m × v</code></td><td>kg·m/s</td></tr>
+    </table></div>
+  </details>
+
+  <div class="panel problem" id="problem"><p class="label" id="ptitle"></p><p id="ptext"></p><div class="dots" id="dots" aria-hidden="true"></div></div>
+  <div id="steps" class="stack" style="gap:12px"></div>
+  </div>
+
+  <div id="tabQuiz" class="stack" hidden>
+    <details class="panel" open><summary>Study sheet: formulas and units</summary>
+      <div id="studyList"></div>
+      <p class="sub" style="margin:10px 0 0">Problems may use km, km/h, min, or h instead. The pattern stays the same.</p>
+    </details>
+    <details class="panel"><summary>Study sheet: key ideas</summary><div id="ideasList"></div></details>
+    <div class="panel"><p class="label">Quiz yourself</p><div id="quizBox"></div></div>
+  </div>
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[ri(0,a.length-1)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=ri(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
+const parse=v=>{const t=String(v).trim().replace(/,/g,'');return t===''||isNaN(t)?NaN:parseFloat(t)};
+const near=(a,b,t)=>Math.abs(a-b)<=t;
+const r4=n=>+(+n).toFixed(4);
+
+/* ---------- step builders ---------- */
+const NAMES={speed:'Speed',distance:'Distance',time:'Time',accel:'Acceleration',force:'Force',momentum:'Momentum'};
+function findStep(target,clue){
+  const others=shuffle(Object.keys(NAMES).filter(k=>k!==target)).slice(0,2);
+  return {kind:'choice',prompt:'What is the question asking you to find?',
+    options:[{t:NAMES[target],ok:true},...others.map(k=>({t:NAMES[k],ok:false,why:`Look at the wording again: ${clue} The answer is ${NAMES[target].toLowerCase()}, not ${NAMES[k].toLowerCase()}.`}))],
+    explain:`${clue} So we are solving for ${NAMES[target].toLowerCase()}.`};
+}
+function formulaStep(correct,wrongs,explain){
+  return {kind:'choice',prompt:'Which formula do you use?',
+    options:[{t:correct,ok:true},...wrongs.map(([t,why])=>({t,ok:false,why}))],explain};
+}
+function knownStep(fields,extra){
+  return {kind:'fill',prompt:'List what you know. Pull each number out of the problem and write it with its unit.'+(extra||''),
+    fields,explain:'Writing the numbers down first keeps you from mixing up which one is which.'};
+}
+const UNIT_POOL=['m','km','s','min','h','m/s','km/h','km/min','m/s²','N','kg','kg·m/s'];
+function unitOpts(u){return shuffle([u,...shuffle(UNIT_POOL.filter(x=>x!==u)).slice(0,3)])}
+function numStep(o){return Object.assign({kind:'num',tol:0.01,unitOptions:o.unit?unitOpts(o.unit):null},o)}
+
+/* Problem text uses {g|given quantity} and {q|what is asked} markup. */
+const plainText=t=>t.replace(/\{[gq]\|([^}]+)\}/g,'$1');
+function parseMarkup(text){
+  const tokens=[]; let gid=0, last=0, m; const re=/\{([gq])\|([^}]+)\}/g;
+  const plain=str=>{
+    let space=/^\s/.test(str), first=true;
+    (str.match(/\S+|\s+/g)||[]).forEach(ch=>{
+      if(/^\s+$/.test(ch)){space=true;return}
+      if(first&&!space&&tokens.length){tokens[tokens.length-1].after+=ch}
+      else tokens.push({w:ch,role:null,after:''});
+      first=false; space=false;
+    });
+  };
+  while((m=re.exec(text))){
+    plain(text.slice(last,m.index));
+    gid++; m[2].split(/\s+/).forEach(w=>tokens.push({w,role:m[1],gid,after:''}));
+    last=re.lastIndex;
+  }
+  plain(text.slice(last));
+  return tokens;
+}
+function markStep(text){
+  const tokens=parseMarkup(text);
+  const groupText=r=>{const g={};tokens.forEach(t=>{if(t.role===r)(g[t.gid]=g[t.gid]||[]).push(t.w)});return Object.values(g).map(a=>a.join(' '))};
+  return {kind:'mark',tokens,
+    prompt:'Highlight the important information. Tap the yellow marker, then tap each given quantity (a number with its unit). Tap the blue marker, then tap the words that say what the question is asking you to find.',
+    explain:`Givens: ${groupText('g').join(', ')}. The question asks: "${groupText('q').join(' ')}". Everything else in the problem is just the story.`};
+}
+
+/* ---------- problem builders ---------- */
+function pSpeed(o){
+  const {D,T,du,tu,unit}=o, ans=D/T;
+  const steps=[
+    findStep('speed',`"${o.clue||'How fast'}" is a question about speed.`),
+    formulaStep('S = D ÷ T',[['S = D × T','Multiplying would give a bigger and bigger number as time goes up. Speed is distance per time, so you divide.'],['S = T ÷ D','That is upside down. Distance goes on top.']],'Speed is distance divided by time: how much distance you cover in each unit of time.'),
+    knownStep([{label:'Distance (D)',unit:du,ans:D},{label:'Time (T)',unit:tu,ans:T}]),
+    numStep({prompt:`Calculate S = D ÷ T = <code>${D} ÷ ${T}</code>.${o.roundNote||''}`,ans,tol:o.tol||0.01,unit,
+      hint:'Divide the distance by the time.',round:o.round,
+      traps:[{v:T/D,msg:'You divided time by distance. Put the distance first: D ÷ T.'},{v:D*T,msg:'That is D × T. Speed needs division.'}],
+      explain:`${D} ÷ ${T} = ${r4(ans)}, so the speed is ${o.round||r4(ans)} ${unit}.`})
+  ];
+  if(o.bonus) steps.push(numStep(o.bonus));
+  return {title:o.title,text:o.text,steps};
+}
+function pDistance(o){
+  const {S,T,su,tu,du,Tconv}=o; const Tuse=Tconv?Tconv.to:T; const ans=S*Tuse;
+  const steps=[
+    findStep('distance',`"${o.clue||'How far'}" is a question about distance.`),
+    formulaStep('D = S × T',[['D = S ÷ T','Dividing speed by time does not give a distance. Distance is how much ground you cover, so multiply speed by time.'],['D = T ÷ S','That is upside down, and it would give a time-like answer.']],'Distance = speed × time. If you go 5 m every second for 10 seconds, you go 5 × 10 meters.')
+  ];
+  if(Tconv) steps.push(numStep({prompt:`Check the units. The speed is in <code>${su}</code> but the time is given in ${tu}. Convert ${T} ${tu} to ${Tconv.tu}.`,ans:Tconv.to,tol:0.001,unit:Tconv.tu,
+    hint:`There are 60 minutes in 1 hour, so multiply ${T} by 60.`,traps:[{v:T,msg:`That is still ${T}. Each hour is 60 minutes, so multiply by 60.`},{v:T/60,msg:'You divided. Going from hours to minutes makes the number bigger, so multiply by 60.'}],
+    explain:`${T} × 60 = ${Tconv.to} ${Tconv.tu}. The units now match.`}));
+  steps.push(knownStep([{label:'Speed (S)',unit:su,ans:S},{label:'Time (T)',unit:Tconv?Tconv.tu:tu,ans:Tuse}],Tconv?' Use the converted time.':''));
+  steps.push(numStep({prompt:`Calculate D = S × T = <code>${S} × ${Tuse}</code>.`,ans,unit:du,hint:'Multiply the speed by the time.',
+    traps:Tconv?[{v:S*T,msg:`You used ${T}, but the time has to be in minutes (${Tuse}).`}]:[{v:S/Tuse,msg:'That is S ÷ T. Distance needs multiplication.'}],
+    explain:`${S} × ${Tuse} = ${r4(ans)} ${du}.`}));
+  return {title:o.title,text:o.text,steps};
+}
+function pTime(o){
+  const {D,S,du,su}=o, ans=D/S;
+  return {title:o.title,text:o.text,steps:[
+    findStep('time',`"${o.clue||'How long'}" is a question about time.`),
+    formulaStep('T = D ÷ S',[['T = D × S','Multiplying would make a faster speed take longer, which does not make sense.'],['T = S ÷ D','That is upside down. The distance goes on top.']],'Start from S = D ÷ T and rearrange it. Time = distance ÷ speed.'),
+    knownStep([{label:'Distance (D)',unit:du,ans:D},{label:'Speed (S)',unit:su,ans:S}]),
+    numStep({prompt:`Calculate T = D ÷ S = <code>${D} ÷ ${S}</code>.${o.roundNote||''}`,ans,tol:o.tol||0.01,unit:o.unit,round:o.round,hint:'Divide the distance by the speed.',
+      traps:[{v:S/D,msg:'You divided speed by distance. Put the distance first: D ÷ S.'},{v:D*S,msg:'That is D × S. Time needs division.'}],
+      explain:`${D} ÷ ${S} = ${r4(ans)}, so the time is ${o.round||r4(ans)} ${o.unit}.`})]};
+}
+function pAccel(o){
+  const {vi,vf,t}=o, dv=vf-vi, ans=dv/t;
+  return {title:o.title,text:o.text,steps:[
+    findStep('accel','"Acceleration" is the rate that velocity changes.'),
+    formulaStep('a = (v_f − v_i) ÷ t',[['a = (v_i − v_f) ÷ t','Backwards. It is final speed minus initial speed.'],['a = (v_f + v_i) ÷ t','Acceleration is a change, so you subtract. Adding the speeds does not measure change.'],['a = v_f ÷ t','You also need to subtract the starting speed. Acceleration is the change in speed, not just the final speed.']],'Acceleration is the change in speed (final minus initial) divided by the time it took.'),
+    knownStep([{label:'Starting speed (v_i)',unit:'m/s',ans:vi},{label:'Final speed (v_f)',unit:'m/s',ans:vf},{label:'Time (t)',unit:'s',ans:t}]),
+    numStep({prompt:`Subtract first. Change in speed = v_f − v_i = <code>${vf} − ${vi}</code>.`,ans:dv,unit:'m/s',hint:'Final speed minus starting speed.',
+      traps:[{v:-dv,msg:'Right size, wrong sign. Subtract the starting speed from the final speed.'},{v:vf+vi,msg:'That adds them. Subtract instead.'}],
+      explain:`${vf} − ${vi} = ${dv} m/s.`}),
+    numStep({prompt:`Now divide by the time. a = <code>${dv} ÷ ${t}</code>.`,ans,unit:'m/s²',tol:o.tol||0.01,hint:'Divide the change in speed by the time.',
+      traps:[{v:t/dv,msg:'Upside down. The change in speed goes on top.'}],
+      explain:`${dv} ÷ ${t} = ${r4(ans)}. Acceleration is in m/s² because it is meters per second, per second.`})]};
+}
+function pForceA(o){
+  const {m,F}=o, ans=F/m;
+  return {title:o.title,text:o.text,steps:[
+    findStep('accel','The question asks how fast the speed changes, which is acceleration.'),
+    formulaStep('a = F ÷ m',[['a = F × m','Multiplying would mean a heavier object accelerates more. A heavier object accelerates less for the same push.'],['a = m ÷ F','Upside down. The force goes on top.']],'Newton\'s Second Law is F = m × a. Divide both sides by m to get a = F ÷ m.'),
+    knownStep([{label:'Force (F)',unit:'N',ans:F},{label:'Mass (m)',unit:'kg',ans:m}]),
+    numStep({prompt:`Calculate a = F ÷ m = <code>${F} ÷ ${m}</code>.${o.roundNote||''}`,ans,tol:o.tol||0.01,unit:'m/s²',round:o.round,hint:'Divide the force by the mass.',
+      traps:[{v:m/F,msg:'Upside down. Force goes on top: F ÷ m.'},{v:F*m,msg:'That is F × m. Solve for acceleration by dividing.'}],
+      explain:`${F} ÷ ${m} = ${r4(ans)}, so the acceleration is ${o.round||r4(ans)} m/s².`})]};
+}
+function pForceF(o){
+  const {m,a}=o, ans=m*a;
+  return {title:o.title,text:o.text,steps:[
+    findStep('force','"Net force" is a push or pull measured in newtons.'),
+    formulaStep('F = m × a',[['F = m ÷ a','Newton\'s Second Law multiplies mass and acceleration.'],['F = a ÷ m','That is the formula for something else. Force is mass × acceleration.']],'Newton\'s Second Law: force = mass × acceleration.'),
+    knownStep([{label:'Mass (m)',unit:'kg',ans:m},{label:'Acceleration (a)',unit:'m/s²',ans:a}]),
+    numStep({prompt:`Calculate F = m × a = <code>${m} × ${a}</code>.`,ans,unit:'N',hint:'Multiply the mass by the acceleration.',
+      traps:[{v:m/a,msg:'That is m ÷ a. Force needs multiplication.'}],explain:`${m} × ${a} = ${r4(ans)} N (newtons).`})]};
+}
+function pMomentum(o){
+  const {m,v}=o, ans=m*v;
+  return {title:o.title,text:o.text,steps:[
+    findStep('momentum','"Momentum" is mass in motion.'),
+    formulaStep('p = m × v',[['p = m ÷ v','Momentum grows with speed, so speed has to multiply.'],['p = m + v','Adding mass and speed makes no sense because they are different kinds of quantity. Multiply them.']],'Momentum = mass × velocity. A heavier or faster object has more momentum.'),
+    knownStep([{label:'Mass (m)',unit:'kg',ans:m},{label:'Speed (v)',unit:'m/s',ans:v}]),
+    numStep({prompt:`Calculate p = m × v = <code>${m} × ${v}</code>.`,ans,unit:'kg·m/s',hint:'Multiply the mass by the speed.',
+      traps:[{v:m/v,msg:'That is m ÷ v. Momentum needs multiplication.'}],explain:`${m} × ${v} = ${r4(ans)} kg·m/s.`})]};
+}
+
+/* ---------- the six review guide problems ---------- */
+const REVIEW=[
+ {chip:'1 Golf cart',make:()=>pDistance({title:'Review 1',text:'A golf cart travels at a constant speed of {g|0.10 km/min}. It is driven for {g|two hours}. {q|Find the total distance traveled}.',S:0.10,su:'km/min',T:2,tu:'hours',du:'km',Tconv:{to:120,tu:'min'}})},
+ {chip:'2 Sledder',make:()=>pAccel({title:'Review 2',text:'A person is sledding down a hill at {g|9 m/s}. The hill gets steeper and his speed increases to {g|18 m/s} in {g|3 seconds}. {q|What was his acceleration}?',vi:9,vf:18,t:3})},
+ {chip:'3 Ball',make:()=>pMomentum({title:'Review 3',text:'{q|What is the momentum} of a {g|0.2 kg} ball moving with a speed of {g|5 m/s}?',m:0.2,v:5})},
+ {chip:'4 Swimmer',make:()=>pForceA({title:'Review 4',text:'An {g|80-kg} swimmer pushes off a pool wall with a force of {g|225 N}. {q|At what rate will the swimmer accelerate forward}?',m:80,F:225,tol:0.01,round:'2.81',roundNote:' Round to 2 decimal places.'})},
+ {chip:'5 Thunder',make:()=>pTime({title:'Review 5',text:'If sound travels at {g|300 m/s}, {q|how long will it take} for the sound of thunder to travel {g|1,250 m}?',D:1250,du:'m',S:300,su:'m/s',unit:'s',tol:0.01,round:'4.17',roundNote:' Round to 2 decimal places.'})},
+ {chip:'6 Sarah',make:()=>pSpeed({title:'Review 6',text:'Sarah took {g|45 minutes} to travel to her cousin\'s house, which was {g|4 km} away. {q|What was her speed}? (Give km/min first, then convert to km/h.)',D:4,du:'km',T:45,tu:'min',unit:'km/min',tol:0.0006,round:'0.089',roundNote:' Round to 3 decimal places.',
+   bonus:{prompt:'Bonus: convert to km/h. There are 60 minutes in an hour, so multiply your km/min speed by 60. Use 0.0889 × 60.',ans:5.333,tol:0.05,unit:'km/h',hint:'Multiply km/min by 60 to get km/h.',round:'5.3',
+     traps:[{v:0.0889/60,msg:'You divided by 60. Each hour has 60 minutes, so the speed in km/h is bigger. Multiply.'}],explain:'0.0889 × 60 ≈ 5.3, so Sarah traveled about 5.3 km/h.'}})}
+];
+
+/* ---------- random practice ---------- */
+const THINGS=['cyclist','runner','scooter','skater','toy car','sled'];
+const GEN={
+ speed(){const T=pick([2,3,4,5,6]),S=pick([12,15,20,24,30,45]),pr=pick([['km','h'],['m','s']]);const D=S*T;
+   return pSpeed({title:'Practice',text:`A ${pick(THINGS)} travels {g|${D} ${pr[0]}} in {g|${T} ${pr[1]}}. {q|What is its average speed}?`,D,du:pr[0],T,tu:pr[1],unit:pr[0]+'/'+pr[1]})},
+ distance(){const S=pick([3,4,5,8,10,12,15]),T=pick([4,5,6,8,10,12]);
+   return pDistance({title:'Practice',text:`A ${pick(THINGS)} moves at a constant {g|${S} m/s} for {g|${T} seconds}. {q|How far does it travel}?`,S,su:'m/s',T,tu:'s',du:'m'})},
+ time(){const S=pick([5,10,12,15,20,25]),T=pick([3,4,5,6,8]),D=S*T;
+   return pTime({title:'Practice',text:`A ${pick(THINGS)} moves at {g|${S} m/s}. {q|How long does it take} to go {g|${D} m}?`,D,du:'m',S,su:'m/s',unit:'s'})},
+ accel(){const vi=pick([0,2,4,5,10]),t=pick([2,3,4,5]),a=pick([1,2,3,4,5,6]),vf=vi+a*t;
+   return pAccel({title:'Practice',text:`A ${pick(THINGS)} speeds up from {g|${vi} m/s} to {g|${vf} m/s} in {g|${t} seconds}. {q|What is its acceleration}?`,vi,vf,t})},
+ forceA(){const m=pick([10,20,25,40,50,60]),a=pick([2,3,4,5]),F=m*a;
+   return pForceA({title:'Practice',text:`A {g|${m} kg} ${pick(['cart','crate','sled','wagon'])} is pushed with a net force of {g|${F} N}. {q|What is its acceleration}?`,m,F})},
+ forceF(){const m=pick([5,10,20,40,50]),a=pick([2,3,4,6]);
+   return pForceF({title:'Practice',text:`A {g|${m} kg} ${pick(['cart','crate','sled','wagon'])} accelerates at {g|${a} m/s²}. {q|What net force acts on it}?`,m,a})},
+ momentum(){const m=pick([2,3,4,5,10,20]),v=pick([2,3,4,5,6,8,10]);
+   return pMomentum({title:'Practice',text:`A {g|${m} kg} ${pick(['ball','cart','bike','sled'])} moves at {g|${v} m/s}. {q|What is its momentum}?`,m,v})}
+};
+
+/* ---------- app ---------- */
+let cur=null, idx=0, results=[], finished=false, doneReview={}, curReview=-1;
+const stepsBox=$('#steps');
+
+function setProblem(p,reviewIdx){
+  if(!p.marked){p.steps.unshift(markStep(p.text));p.text=plainText(p.text);p.marked=true}
+  cur=p; idx=0; results=[]; finished=false; curReview=reviewIdx;
+  $('#ptitle').textContent=reviewIdx>=0?`Review guide, problem ${reviewIdx+1}`:'Practice problem';
+  $('#ptext').textContent=p.text;
+  stepsBox.innerHTML='';
+  document.querySelectorAll('#reviewChips .chip').forEach((c,i)=>c.setAttribute('aria-pressed',String(i===reviewIdx)));
+  drawDots(); mount(0,false);
+}
+function drawDots(){
+  const d=$('#dots'); d.innerHTML='';
+  cur.steps.forEach((s,i)=>{const x=el('span','dot');
+    if(results[i]) x.classList.add(results[i]==='first'?'first':'retry'); else if(i===idx&&!finished) x.classList.add('cur'); d.appendChild(x)});
+}
+function mount(i,scroll=true){
+  const s=cur.steps[i], card=el('section','step active'), st={tries:0,locked:false};
+  card.appendChild(Object.assign(el('div','shead'),{innerHTML:`<span class="badge">${i+1}</span><p class="prompt">${s.prompt}</p>`}));
+  const body=el('div'); card.appendChild(body);
+  const fb=el('div','fb'); fb.setAttribute('aria-live','polite'); card.appendChild(fb);
+  const say=(cls,h)=>{fb.className='fb '+cls;fb.innerHTML=h};
+  const actions=el('div','row'); card.appendChild(actions);
+
+  function finish(assisted){
+    st.locked=true; card.classList.remove('active'); card.classList.add('done');
+    actions.innerHTML='';
+    if(s.explain) card.appendChild(el('div','why',s.explain));
+    results[i]=(!assisted&&st.tries===0)?'first':'retry';
+    if(i+1<cur.steps.length){idx=i+1;drawDots();mount(i+1)} else {finished=true;drawDots();showEnd()}
+  }
+  function showMe(fn){
+    const b=el('button','btn ghost','Show me this step'); b.type='button';
+    b.onclick=()=>{fn();finish(true)}; actions.innerHTML=''; actions.appendChild(b);
+  }
+
+  if(s.kind==='choice'){
+    const box=el('div','opts'); body.appendChild(box);
+    const btns=shuffle(s.options).map(o=>{const b=el('button','opt',o.t);b.type='button';
+      b.onclick=()=>{ if(st.locked) return;
+        if(o.ok){b.classList.add('right');box.querySelectorAll('button').forEach(x=>x.disabled=true);say('good','Yes. '+(st.tries?'':'Nice, first try.'));finish(false)}
+        else{st.tries++;b.classList.add('wrong');b.disabled=true;say('bad',o.why);if(st.tries>=2) showMe(()=>{box.querySelectorAll('button').forEach(x=>{x.disabled=true;if(s.options.find(q=>q.t===x.textContent).ok)x.classList.add('right')})})}};
+      box.appendChild(b);return b});
+  }
+  if(s.kind==='fill'){
+    const g=el('div','fields'); body.appendChild(g);
+    const ins=s.fields.map((f,k)=>{const w=el('div','field');const id=`f${i}_${k}`;
+      w.innerHTML=`<label for="${id}">${f.label}</label><div class="inwrap"><input id="${id}" inputmode="decimal" autocomplete="off"><span class="u">${f.unit}</span></div>`;
+      g.appendChild(w);return w.querySelector('input')});
+    const b=el('button','btn','Check'); b.type='button'; actions.appendChild(b);
+    const check=()=>{ if(st.locked) return; let ok=true,msgs=[];
+      s.fields.forEach((f,k)=>{const v=parse(ins[k].value);ins[k].classList.remove('ok','no');
+        if(near(v,f.ans,Math.max(1e-9,Math.abs(f.ans)*1e-6))) ins[k].classList.add('ok');
+        else{ok=false;ins[k].classList.add('no');
+          const other=s.fields.find((q,j)=>j!==k&&near(v,q.ans,1e-9));
+          msgs.push(isNaN(v)?`Type a number for ${f.label}.`:other?`${v} is the number for ${other.label}. Find the one that goes with ${f.label}.`:`Re-read the problem for ${f.label}. Which number goes with it?`)}});
+      if(ok){say('good','Right. Those are the numbers to use.'+(st.tries?'':' First try.'));ins.forEach(x=>x.readOnly=true);finish(false)}
+      else{st.tries++;say('bad',msgs.join('<br>'));if(st.tries>=2) showMe(()=>{s.fields.forEach((f,k)=>{ins[k].value=f.ans;ins[k].classList.remove('no');ins[k].classList.add('ok')})})}};
+    b.onclick=check; ins.forEach(x=>x.addEventListener('keydown',e=>{if(e.key==='Enter')check()}));
+  }
+  if(s.kind==='num'){
+    const w=el('div','inwrap'); const id=`n${i}`;
+    w.innerHTML=`<label for="${id}" style="position:absolute;left:-9999px">Your answer</label><input id="${id}" inputmode="decimal" autocomplete="off" placeholder="your answer">`;
+    const inp=w.querySelector('input'); let sel=null;
+    if(s.unitOptions){sel=el('select');sel.id=id+'u';sel.setAttribute('aria-label','Unit');sel.innerHTML='<option value="">unit?</option>'+s.unitOptions.map(u=>`<option>${u}</option>`).join('');w.appendChild(sel)}
+    body.appendChild(w);
+    const b=el('button','btn','Check'); b.type='button'; actions.appendChild(b);
+    const check=()=>{ if(st.locked) return; inp.classList.remove('ok','no');
+      const v=parse(inp.value);
+      if(isNaN(v)){say('bad','Type a number first.');return}
+      const right=near(v,s.ans,s.tol);
+      if(right&&sel&&sel.value!==s.unit){ if(!sel.value){say('bad','The number is right. Now pick the unit.');return}
+        st.tries++;say('bad',`The number is right, but the unit is not. ${s.unit==='N'?'Force is measured in newtons.':'Think about what this quantity measures.'}`);return}
+      if(right){inp.classList.add('ok');inp.readOnly=true;if(sel)sel.disabled=true;say('good',(st.tries?'Got it.':'Correct, first try.'));finish(false);return}
+      st.tries++;inp.classList.add('no');
+      const trap=(s.traps||[]).find(t=>near(v,t.v,Math.max(s.tol,Math.abs(t.v)*0.01)));
+      if(trap) say('bad',trap.msg);
+      else if(Math.abs(v-s.ans)<=Math.abs(s.ans)*0.03&&s.round) say('bad',`Very close. Round it the way the problem says (${s.round}).`);
+      else if(Math.abs(v-s.ans)<=Math.abs(s.ans)*0.03) say('bad','Very close. Check your arithmetic or rounding.');
+      else say('bad','Not yet. '+s.hint);
+      if(st.tries>=2) showMe(()=>{inp.value=s.round||r4(s.ans);inp.classList.remove('no');inp.classList.add('ok');if(sel){sel.value=s.unit}})};
+    b.onclick=check; inp.addEventListener('keydown',e=>{if(e.key==='Enter')check()});
+  }
+  if(s.kind==='mark'){
+    let mode='g'; const marks={}, btns=[];
+    const tools=el('div','tools'); body.appendChild(tools);
+    const tg=el('button','tool g','Given: number + unit'), tq=el('button','tool q','Asking: what to find');
+    [tg,tq].forEach(b=>b.type='button'); tools.append(tg,tq);
+    const setMode=m=>{mode=m;tg.setAttribute('aria-pressed',String(m==='g'));tq.setAttribute('aria-pressed',String(m==='q'))};
+    tg.onclick=()=>setMode('g'); tq.onclick=()=>setMode('q'); setMode('g');
+    const sent=el('p','sent'); body.appendChild(sent);
+    const paint=()=>btns.forEach((b,k)=>{b.className='w'+(marks[k]?' '+marks[k]:'')});
+    s.tokens.forEach((t,k)=>{
+      const b=el('button','w',t.w); b.type='button'; btns.push(b);
+      b.onclick=()=>{ if(st.locked) return; if(marks[k]===mode) delete marks[k]; else marks[k]=mode; paint(); fb.className='fb'; fb.innerHTML='' };
+      sent.appendChild(b); if(t.after) sent.appendChild(document.createTextNode(t.after)); sent.appendChild(document.createTextNode(' '));
+    });
+    const b=el('button','btn','Check'); b.type='button'; actions.appendChild(b);
+    b.onclick=()=>{ if(st.locked) return; paint(); const msgs=[];
+      s.tokens.forEach((t,k)=>{
+        if(marks[k]==='g'&&t.role!=='g'){btns[k].classList.add('bad');msgs.push(t.role==='q'?`"${t.w}" is part of the question. Use the blue marker for that.`:`"${t.w}" is not a given quantity. A given is a number with its unit.`)}
+        if(marks[k]==='q'&&t.role!=='q'){btns[k].classList.add('bad');msgs.push(`"${t.w}" is not part of the question.`)}
+      });
+      const groups={}; s.tokens.forEach((t,k)=>{if(t.role==='g')(groups[t.gid]=groups[t.gid]||[]).push(k)});
+      let missing=0;
+      Object.values(groups).forEach(ks=>{const n=ks.filter(k=>marks[k]==='g').length;
+        if(n===0) missing++; else if(n<ks.length) msgs.push(`A given is a number and its unit. Mark both words of "${ks.map(k=>s.tokens[k].w).join(' ')}".`)});
+      if(missing) msgs.push(`You still have ${missing} given ${missing>1?'quantities':'quantity'} to find. Look for numbers that come with a unit.`);
+      const qk=s.tokens.map((t,k)=>t.role==='q'?k:-1).filter(k=>k>=0), mq=qk.filter(k=>marks[k]==='q').length;
+      if(mq===0) msgs.push('Mark the question with the blue marker: the words that say what you have to find.');
+      else if(mq<Math.ceil(qk.length/2)) msgs.push('Mark the whole question, not just part of it.');
+      if(!msgs.length){ btns.forEach(x=>x.disabled=true); say('good','Right. You found everything the problem gives you and what it asks.'+(st.tries?'':' First try.')); finish(false) }
+      else{ st.tries++; say('bad',[...new Set(msgs)].join('<br>'));
+        if(st.tries>=2) showMe(()=>{s.tokens.forEach((t,k)=>{if(t.role) marks[k]=t.role; else delete marks[k]}); paint(); btns.forEach(x=>x.disabled=true)}) }
+    };
+  }
+  stepsBox.appendChild(card);
+  if(scroll) card.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'nearest'});
+  const f=card.querySelector('input'); if(f&&scroll) setTimeout(()=>f.focus({preventScroll:true}),50);
+}
+function showEnd(){
+  const first=results.filter(r=>r==='first').length, n=results.length;
+  if(curReview>=0){doneReview[curReview]=true;document.querySelectorAll('#reviewChips .chip')[curReview].classList.add('done')}
+  const c=el('section','step fin');
+  const msg=first===n?'Perfect run. You know this one.':first>=n-1?'Almost perfect. Try the same type with new numbers.':'You finished it. Do another one to lock the steps in.';
+  c.innerHTML=`<h2>Problem solved</h2><div class="bigscore">${first} of ${n}</div><p style="margin:0">steps right on the first try. ${msg}</p>`;
+  const row=el('div','row'); row.style.justifyContent='center';
+  const again=el('button','btn','Same type, new numbers'); again.type='button';
+  again.onclick=()=>{const t=cur.kind||'any'; practice(cur.genKey)};
+  const next=el('button','btn ghost',curReview>=0&&curReview<REVIEW.length-1?'Next review problem':'Another practice problem'); next.type='button';
+  next.onclick=()=>{ if(curReview>=0&&curReview<REVIEW.length-1) setProblem(REVIEW[curReview+1].make(),curReview+1); else practice('any')};
+  row.append(again,next); c.appendChild(row); stepsBox.appendChild(c);
+  c.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function practice(key){
+  const keys=Object.keys(GEN); const k=(!key||key==='any')?pick(keys):key;
+  const p=GEN[k](); p.genKey=k; setProblem(p,-1);
+}
+REVIEW.forEach((r,i)=>{const b=el('button','chip',r.chip);b.type='button';b.setAttribute('aria-pressed','false');
+  b.onclick=()=>setProblem(r.make(),i);$('#reviewChips').appendChild(b)});
+REVIEW.forEach((r,i)=>{});
+$('#newBtn').onclick=()=>practice($('#typeSel').value);
+// the "same type" button on review problems maps to the matching generator
+const KEYMAP=[ 'distance','accel','momentum','forceA','time','speed' ];
+const _set=setProblem;
+setProblem=function(p,ri){ if(ri>=0&&!p.genKey) p.genKey=KEYMAP[ri]; _set(p,ri) };
+/* ---------- tabs ---------- */
+let quizReady=false;
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',String(x===b)));
+  $('#tabProblems').hidden=b.dataset.t!=='p'; $('#tabQuiz').hidden=b.dataset.t!=='q';
+  if(b.dataset.t==='q'&&!quizReady){quizReady=true;initQuizTab()}
+});
+
+/* ---------- formula + unit drills ---------- */
+const FD={
+ speed:{label:'speed',short:'Speed',f:'S = D ÷ T',tok:['S','=','D','÷','T'],comm:false,vars:[['S','speed','m/s'],['D','distance','m'],['T','time','s']],hook:'"Per" means divide. Speed is distance per time.'},
+ distance:{label:'distance',short:'Distance',f:'D = S × T',tok:['D','=','S','×','T'],comm:true,vars:[['D','distance','m'],['S','speed','m/s'],['T','time','s']],hook:'Go S meters every second for T seconds, so multiply.'},
+ time:{label:'time',short:'Time',f:'T = D ÷ S',tok:['T','=','D','÷','S'],comm:false,vars:[['T','time','s'],['D','distance','m'],['S','speed','m/s']],hook:'How many S-sized steps fit in the distance? Divide.'},
+ accel:{label:'acceleration (from a change in speed)',short:'Acceleration',f:'a = (v_f − v_i) ÷ t',tok:['a','=','(','v_f','−','v_i',')','÷','t'],comm:false,vars:[['a','acceleration','m/s²'],['v_f','final speed','m/s'],['v_i','starting speed','m/s'],['t','time','s']],hook:'Final minus initial, then divide by the time it took.'},
+ forceF:{label:'force',short:'Force',f:'F = m × a',tok:['F','=','m','×','a'],comm:true,vars:[['F','force','N'],['m','mass','kg'],['a','acceleration','m/s²']],hook:"Newton's Second Law: force is mass times acceleration."},
+ forceA:{label:'acceleration (from force and mass)',short:'Acceleration from force',f:'a = F ÷ m',tok:['a','=','F','÷','m'],comm:false,vars:[['a','acceleration','m/s²'],['F','force','N'],['m','mass','kg']],hook:'Start from F = m × a and divide both sides by m.'},
+ momentum:{label:'momentum',short:'Momentum',f:'p = m × v',tok:['p','=','m','×','v'],comm:true,vars:[['p','momentum','kg·m/s'],['m','mass','kg'],['v','speed','m/s']],hook:'Momentum is mass in motion: mass times speed.'}
+};
+const KEYS=Object.keys(FD);
+const QU={speed:'m/s',distance:'m',time:'s',acceleration:'m/s²',force:'N',mass:'kg',momentum:'kg·m/s'};
+const U=u=>u==='N'?'N (newtons)':u;
+const OPS=['+','−','×','÷'];
+const VPOOL=['S','D','T','a','v_f','v_i','t','F','m','p','v'];
+const uniq=a=>[...new Set(a)];
+const cap=s=>s[0].toUpperCase()+s.slice(1);
+const clash=(a,b)=>(a==='accel'&&b==='forceA')||(a==='forceA'&&b==='accel');
+const joinTok=t=>t.reduce((s,x,i)=>s+((i===0||t[i-1]==='('||x===')')?'':' ')+x,'');
+const mc=(prompt,ok,bad,explain)=>({kind:'mc',prompt,explain,options:[{t:ok,ok:true},...bad.map(([t,why])=>({t,ok:false,why}))]});
+
+function gName2F(k){const d=FD[k];const bad=shuffle(KEYS.filter(x=>x!==k&&!clash(k,x))).slice(0,3);
+  return mc(`Which formula finds ${d.label}?`,d.f,bad.map(x=>[FD[x].f,`That one finds ${FD[x].label}.`]),`${d.f}. ${d.hook}`)}
+function gF2Name(k){const d=FD[k];const bad=shuffle(KEYS.filter(x=>x!==k&&!clash(k,x))).slice(0,3);
+  return mc(`What does <code>${d.f}</code> find?`,d.label,bad.map(x=>[FD[x].label,`Not quite. ${FD[x].label} uses ${FD[x].f}.`]),`${d.f} finds ${d.label}. ${d.hook}`)}
+function gBlank(k){const d=FD[k];const idxs=d.tok.map((t,i)=>i).filter(i=>!['=','(',')'].includes(d.tok[i]));const i=pick(idxs);const ans=d.tok[i];
+  const isOp=OPS.includes(ans);let bad;
+  if(isOp) bad=OPS.filter(x=>x!==ans);
+  else{const present=new Set(d.tok);const alt=ans==='T'?'t':ans==='t'?'T':null;
+    bad=shuffle(VPOOL.filter(x=>!present.has(x)&&x!==alt&&!(ans[0]==='v'&&x[0]==='v'))).slice(0,3)}
+  const shown=d.tok.slice();shown[i]='____';
+  return mc(`Fill in the blank: <code>${joinTok(shown)}</code>`,ans,bad.map(x=>[x,`Not quite. ${d.hook}`]),`${d.f}. ${d.hook}`)}
+function gSymbol(k){const d=FD[k];const [sym,mean]=pick(d.vars);
+  const all=uniq(Object.values(FD).flatMap(x=>x.vars.map(v=>v[1])));const speedy=['speed','final speed','starting speed'];
+  const bad=shuffle(all.filter(m=>m!==mean&&!(speedy.includes(mean)&&speedy.includes(m)))).slice(0,3);
+  return mc(`In <code>${d.f}</code>, what does <code>${sym}</code> stand for?`,mean,bad.map(m=>[m,'Not quite. Check the study sheet and try again.']),`${sym} is the ${mean}.`)}
+function gBuild(k){const d=FD[k];const have=new Set(d.tok);
+  const extra=shuffle(['+','−','×','÷','S','D','T','m','a','v','t','F','p'].filter(x=>!have.has(x))).slice(0,3);
+  const alts=[d.tok];if(d.comm){const a=d.tok.slice();[a[2],a[4]]=[a[4],a[2]];alts.push(a)}
+  return {kind:'build',prompt:`Build the formula for ${d.label}. Tap the tiles in order.`,tiles:shuffle([...d.tok,...extra]),alts,show:d.tok,hook:d.hook,explain:`${d.f}. ${d.hook}`}}
+function gUnits(k){const d=FD[k];
+  return {kind:'units',prompt:`Pick the unit for each part of <code>${d.f}</code>.`,rows:d.vars.map(([s,m,u])=>({label:`${s} (${m})`,ans:u})),
+    choices:['m','s','m/s','m/s²','N','kg','kg·m/s'],explain:d.vars.map(([s,m,u])=>`${s}: ${U(u)}`).join(', ')+'.'}}
+function gQ2U(q){const u=QU[q];const bad=shuffle(Object.values(QU).filter(x=>x!==u)).slice(0,3);
+  return mc(`What unit goes with ${q}? (standard metric unit)`,U(u),bad.map(x=>[U(x),`${U(x)} is the unit for ${Object.keys(QU).find(k=>QU[k]===x)}.`]),`${cap(q)} is measured in ${U(u)}.`)}
+function gU2Q(u){const q=Object.keys(QU).find(k=>QU[k]===u);const bad=shuffle(Object.keys(QU).filter(x=>x!==q)).slice(0,3);
+  return mc(`${U(u)} is the unit for which quantity?`,q,bad.map(x=>[x,`${cap(x)} uses ${U(QU[x])}.`]),`${U(u)} measures ${q}.`)}
+const MK={concept:gConcept,name2f:gName2F,f2name:gF2Name,build:gBuild,blank:gBlank,symbol:gSymbol,units:gUnits,q2u:gQ2U,u2q:gU2Q};
+
+/* ---------- concept questions from the review guide ---------- */
+const CONCEPTS=[
+ ["Average vs constant speed","What is the difference between average speed and constant speed?","Average speed is total distance ÷ total time. Constant speed means the speed never changes.",[["Average speed includes direction. Constant speed does not.","Direction is what velocity adds. Both of these are speeds."],["Constant speed is total distance ÷ total time. Average speed means the speed never changes.","Those two are swapped."],["They mean the same thing.","A road trip with stops has an average speed but not a constant one."]],"Average speed = total distance ÷ total time. Constant speed means the speed does not change."],
+ ["Speed vs velocity","Why do highways post speed limits instead of velocity limits?","Speed only tells how fast. Velocity would have to include a direction.",[["Velocity is measured in different units than speed.","Both use units like m/s. Velocity just adds a direction."],["Cars do not have a velocity.","Every moving object has a velocity."],["Velocity only applies to objects that are speeding up.","A constant velocity is still a velocity."]],"A speed limit only cares how fast you go. Velocity includes direction, so it would not make sense as a limit."],
+ ["Speed, velocity, acceleration","Which statement compares speed, velocity, and acceleration correctly?","Speed is distance over time. Velocity is speed with a direction. Acceleration is the rate velocity changes.",[["Speed is speed with a direction. Velocity is distance over time. Acceleration is how far you go.","Speed and velocity are swapped, and acceleration is not distance."],["Acceleration is just another word for speed.","Acceleration is how fast velocity changes, not how fast you are going."],["Velocity is how much force acts on an object. Acceleration is how heavy it is.","Those are about force and mass, not motion."]],"Speed = distance ÷ time. Velocity = speed + direction. Acceleration = the rate of change of velocity."],
+ ["Velocity","Which one includes both the speed of an object and the direction it is moving?","Velocity",[["Speed","Speed has no direction."],["Acceleration","Acceleration is the rate velocity changes."],["Distance","Distance is how far, with no direction."]],"Velocity is speed with a direction."],
+ ["Ways to accelerate","What are three ways to accelerate?","Change speed, change direction, or change both",[["Only by speeding up","Slowing down and turning are accelerations too."],["Only by changing mass","Mass does not change acceleration by itself. A change in velocity does."],["Move at a constant speed in a straight line","That is not accelerating. Nothing is changing."]],"Acceleration is any change in velocity: speeding up, slowing down, turning, or a mix."],
+ ["Ways to accelerate","Which object is NOT accelerating?","A runner jogging at a constant 8 mph in a straight line",[["A car rounding a corner","Its direction is changing, so it is accelerating."],["Earth orbiting the Sun","Its direction keeps changing, so it is accelerating."],["A ball rolling to a stop","Its speed is changing, so it is accelerating."]],"No change in speed and no change in direction means no acceleration."],
+ ["Distance vs displacement","What is the difference between distance and displacement?","Distance is how far an object moved. Displacement is the distance and direction from where it started.",[["Displacement is how far an object moved. Distance includes direction.","Those two are swapped."],["They are the same thing.","A round trip has a distance but a displacement of 0."],["Distance is measured in seconds.","Distance is a length, like meters."]],"Distance = how far in total. Displacement = how far and which way from the start."],
+ ["Distance vs displacement","A student walks 5 m east and then 5 m west. What are her distance and displacement?","Distance 10 m, displacement 0 m",[["Distance 0 m, displacement 10 m","Swapped. She walked 10 m but ended where she started."],["Distance 5 m, displacement 5 m","She walked both legs, so the distance adds up."],["Distance 10 m, displacement 10 m","She ended up back at the start, so displacement is 0."]],"She walked 10 m in total (distance) and ended at the start (displacement 0)."],
+ ["Newton's First Law","Which statement is Newton's First Law?","Objects at rest stay at rest and objects in motion stay in motion unless acted on by an unbalanced force.",[["For every action there is an equal and opposite reaction.","That is the Third Law."],["Acceleration is in the same direction as the net force, and F = m × a.","That is the Second Law."],["Objects in motion always slow down on their own.","They only slow down when a force, like friction, acts on them."]],"The First Law is the law of inertia."],
+ ["Newton's Second Law","Which statement is Newton's Second Law?","The acceleration of an object is in the same direction as the net force on it, and F = m × a.",[["For every action there is an equal and opposite reaction.","That is the Third Law."],["Objects at rest stay at rest unless acted on by an unbalanced force.","That is the First Law."],["Heavier objects always fall faster.","Not what the Second Law says."]],"Second Law: F = m × a."],
+ ["Newton's Third Law","Which statement is Newton's Third Law?","For every action there is an equal and opposite reaction.",[["Objects in motion stay in motion unless acted on by an unbalanced force.","That is the First Law."],["F = m × a","That is the Second Law."],["Every force has a direction, but no reaction.","Every action has a reaction."]],"Third Law: action and reaction."],
+ ["Newton's Second Law","The relationship among mass, force, and acceleration is explained by Newton's ___ Law.","Second",[["First","The First Law is about inertia."],["Third","The Third Law is about action and reaction."],["Fourth","Newton's laws of motion only go up to three."]],"F = m × a is Newton's Second Law."],
+ ["Net force","The combined force on an object is called the ___ force.","Net",[["Balanced","If forces are balanced, the net force is zero. The combined force is the net force."],["Centripetal","That is the force toward the center of a circle."],["Reaction","That is the other half of an action-reaction pair."]],"Net force is all the forces on an object added together."],
+ ["Weight and mass","What is the gravitational force exerted on an object called?","Weight",[["Centripetal force","Centripetal force pulls an object toward the center of a circle."],["Friction","Friction opposes motion between surfaces."],["Gravity","Gravity is the pull itself. The force it puts on an object is its weight."]],"Weight is the force of gravity on an object."],
+ ["Weight and mass","An astronaut on the Moon would have the same ___ as on Earth.","Mass",[["Weight","The Moon pulls less than Earth, so weight changes."],["Speed","Speed depends on how the astronaut is moving."],["Acceleration","Acceleration depends on the forces acting."]],"Mass is the amount of matter and does not change. Weight depends on gravity."],
+ ["Gravity","What two things does the gravitational force between two objects depend on?","Their masses and the distance between them",[["Their speeds and their colors","Speed and color do not matter."],["Their masses and their speeds","Speed does not matter. Distance does."],["Their volumes and their temperatures","Neither matters. Mass and distance do."]],"More mass means more pull. More distance means less pull."],
+ ["Gravity","What is the acceleration due to gravity?","9.8 m/s²",[["98 m/s²","Too big by a factor of 10."],["9.8 m/s","That is a speed unit. Acceleration is m/s²."],["980 m/s","Wrong size and wrong unit."]],"Near Earth's surface, falling objects speed up by 9.8 m/s every second."],
+ ["Falling objects","The downward force on an object falling through the air is","Gravity",[["Terminal velocity","That is a top speed, not a force."],["Weightlessness","That is a feeling, not a force."],["Momentum","Momentum is mass times speed, not a force."]],"Gravity pulls things down. Air resistance pushes up."],
+ ["Falling objects","A feather falls more slowly than a brick because of","Air resistance",[["Gravity pulling harder on the brick","Gravity gives both the same acceleration. Air makes the difference."],["The feather having no mass","The feather has a little mass. It catches a lot of air."],["The brick having less gravity","Gravity is the same for both."]],"Air resistance slows the feather much more than the brick."],
+ ["Projectiles","Which of these is a projectile?","Throwing a ball for your dog",[["A soccer ball sitting on a field","It is not moving through the air."],["A phone ringing","Not a flying object."],["Pushing a lawn mower","It stays on the ground."]],"A projectile is thrown or launched and then moves through the air under gravity."],
+ ["Projectiles","What is the path of a projectile?","Curved",[["Straight","Gravity bends the path."],["Always vertical","Only if you throw it straight up."],["Always horizontal","Gravity pulls it down, so it does not stay level."]],"A projectile follows a curve."],
+ ["Projectiles","What causes the path of a projectile to be curved?","Horizontal and vertical motion combining",[["Air pushing it in circles","Air resistance slows it but does not curve it like this."],["Gravity only pulling it sideways","Gravity pulls down."],["The projectile speeding up in a straight line","The path is not straight."]],"It keeps moving forward while gravity pulls it down, so the two motions combine into a curve."],
+ ["Circular motion","When an object moves in a circular path, it accelerates toward the center because of ___.","Centripetal force",[["Friction","Friction opposes sliding. It is not what defines circular motion."],["Inertia","Inertia tries to keep it moving in a straight line."],["Terminal velocity","That is a falling speed."]],"Centripetal force pulls an object toward the center of its circle."],
+ ["Forces","Which of the following is a force?","Friction",[["Acceleration","Acceleration is the result of a net force."],["Inertia","Inertia is a property of matter."],["Velocity","Velocity is speed with direction."]],"A force is a push or a pull. Friction is a force."],
+ ["Forces","Which of the following is a push or pull?","Force",[["Acceleration","That is a change in velocity."],["Inertia","That is resisting a change in motion."],["Momentum","That is mass times speed."]],"A force is a push or a pull."],
+ ["Friction","A family pushes a car that has not started moving. Which type of friction is acting?","Static friction",[["Sliding friction","Nothing is sliding yet."],["Rolling friction","The car is not rolling yet."],["Fluid friction","That is friction in air or water."]],"Static friction acts on surfaces that are not moving against each other."],
+ ["Friction","A penguin sliding on its stomach across ice is an example of which friction?","Sliding friction",[["Static friction","It is moving, so it is not static."],["Rolling friction","Nothing is rolling."],["Fluid friction","That is friction through air or water."]],"Sliding friction: one surface slides across another."],
+ ["Friction","A mouse trying to push an elephant is an example of which friction?","Static friction",[["Sliding friction","The elephant is not sliding."],["Rolling friction","Nothing is rolling."],["Fluid friction","That is friction through air or water."]],"The elephant does not move, so static friction is holding it."],
+ ["Friction","A unicycle going down the street is an example of which friction?","Rolling friction",[["Sliding friction","The wheel rolls, it does not slide."],["Static friction","The unicycle is moving."],["Fluid friction","That is friction through air or water."]],"Rolling friction acts on wheels and balls."],
+ ["Friction","A plane flying is an example of which friction?","Fluid friction",[["Sliding friction","It is not sliding on a surface."],["Static friction","It is moving."],["Rolling friction","Nothing is rolling."]],"Fluid friction (like air resistance) acts on objects moving through air or water."],
+ ["Forces on objects","After a soccer ball is kicked into the air, what forces act on it?","Gravity and friction (air resistance)",[["Only the force of the kick","The kick ends when the ball leaves the foot."],["Only gravity","Air resistance acts on it too."],["Gravity and the force of the kick","The kick is over once the ball is in the air."]],"In the air, gravity pulls down and air resistance pushes against the motion."],
+ ["Newton's First Law","Why should you always wear a seatbelt, using Newton's laws?","First Law: when the car stops, you keep moving until a force, the seatbelt, acts on you.",[["Second Law: a heavier person needs a bigger seatbelt.","The key idea is inertia, which is the First Law."],["Third Law: the car and the road push on each other equally.","True, but it does not explain why you keep moving forward."],["Nothing in Newton's laws applies to seatbelts.","Inertia explains the whole idea."]],"The First Law (inertia): a moving body stays moving until a force acts. The seatbelt is that force."],
+ ["Action and reaction","A rocket's engine pushes hot gas downward. What is the reaction?","The rocket is pushed upward",[["The rocket pushes the gas down","That is the action."],["Gravity pulls the rocket down","Gravity is a different force."],["Air resistance pushes against the rocket","That is a different force too."]],"Action: the engine pushes the gas down (thrust). Reaction: the rocket is pushed up."],
+ ["Action and reaction","When you row a boat, the oars push the water back. The boat moving forward is an example of a ___ force.","Reaction",[["Net","Net force is the total of all forces."],["Centripetal","That is toward the center of a circle."],["Balanced","The boat accelerates, so the forces are not balanced."]],"Action: the oars push the water back. Reaction: the boat moves forward."]
+];
+const IDEAS=[
+ ["Speed, velocity, acceleration","Speed = distance ÷ time, with no direction. Velocity = speed with a direction. Acceleration = the rate velocity changes."],
+ ["Average and constant speed","Average speed = total distance ÷ total time. Constant speed means the speed does not change."],
+ ["Distance and displacement","Distance = how far you moved in total. Displacement = distance and direction from where you started."],
+ ["Ways to accelerate","Change speed, change direction, or both. Constant speed in a straight line is not accelerating."],
+ ["Newton's First Law","Objects at rest stay at rest and objects in motion stay in motion unless acted on by an unbalanced force (inertia). Example: the seatbelt."],
+ ["Newton's Second Law","Acceleration is in the same direction as the net force. F = m × a."],
+ ["Newton's Third Law","For every action there is an equal and opposite reaction. Example: a rocket's thrust pushes the rocket up."],
+ ["Net force","The combined force on an object. Unbalanced forces change its motion."],
+ ["Friction types","Static: not moving yet (mouse and elephant). Sliding (penguin on ice). Rolling (unicycle). Fluid (plane in air)."],
+ ["Gravity, weight, mass","Gravity depends on mass and distance. Weight is the force of gravity on an object. Mass stays the same everywhere. Falling acceleration is 9.8 m/s²."],
+ ["Air resistance","Slows falling objects. A feather falls slower than a brick because of air resistance."],
+ ["Projectiles and circles","A projectile follows a curved path because horizontal and vertical motion combine. Circular motion needs centripetal force toward the center."]
+];
+
+function gConcept(i){const c=CONCEPTS[i];const q=mc(c[1],c[2],c[3],c[4]);q.text=true;return q}
+function drillList(mode){
+  const L=[];
+  if(mode==='formulas'){KEYS.forEach(k=>{L.push([pick(['name2f','build']),k]);L.push([pick(['f2name','blank','symbol']),k])})}
+  else if(mode==='units'){Object.keys(QU).forEach(q=>L.push(['q2u',q]));shuffle(Object.values(QU)).slice(0,4).forEach(u=>L.push(['u2q',u]));shuffle(KEYS).slice(0,3).forEach(k=>L.push(['units',k]))}
+  else if(mode==='concepts'){shuffle(CONCEPTS.map((_,i)=>i)).slice(0,14).forEach(i=>L.push(['concept',i]))}
+  else{shuffle(KEYS).slice(0,6).forEach(k=>L.push([pick(['name2f','build','f2name','blank','symbol']),k]));shuffle(KEYS).slice(0,2).forEach(k=>L.push(['units',k]));shuffle(Object.keys(QU)).slice(0,1).forEach(q=>L.push(['q2u',q]));L.push(['u2q',pick(Object.values(QU))]);shuffle(CONCEPTS.map((_,i)=>i)).slice(0,8).forEach(i=>L.push(['concept',i]))}
+  return shuffle(L);
+}
+const weakLabel=tpl=>tpl[0]==='concept'?CONCEPTS[tpl[1]][0]:FD[tpl[1]]?FD[tpl[1]].short:(QU[tpl[1]]?cap(tpl[1]):U(tpl[1]));
+
+function initQuizTab(){
+  $('#ideasList').innerHTML=IDEAS.map(([t,x])=>`<div class="sl"><div class="slh"><b>${t}</b></div><div class="slr" style="color:var(--ink)">${x}</div></div>`).join('');
+  $('#studyList').innerHTML=KEYS.map(k=>{const d=FD[k];
+    return `<div class="sl"><div class="slh"><b>${d.short}</b><code>${d.f}</code></div><div class="slu">${d.vars.map(([sy,m,u])=>`<span><code>${sy}</code>: ${U(u)}</span>`).join('')}</div><div class="slr">${d.hook}</div></div>`}).join('');
+  quizIntro();
+}
+function quizIntro(){
+  const q=$('#quizBox'); q.innerHTML='';
+  const w=el('div','qintro');
+  w.innerHTML='<p>Study the sheets above, then pick a drill. The mixed drill blends everything. Anything you miss comes back until you get it right.</p>';
+  const row=el('div','chips');
+  [['formulas','Formulas drill'],['units','Units drill'],['concepts','Concepts drill'],['mixed','Mixed drill']].forEach(([m,t])=>{const b=el('button','btn'+(m==='mixed'?'':' ghost'),t);b.type='button';b.onclick=()=>startDrill(m);row.appendChild(b)});
+  w.appendChild(row); q.appendChild(w);
+}
+let QZ=null;
+function startDrill(mode){const L=drillList(mode);QZ={mode,round:1,queue:L,i:0,first:0,total:L.length,missed:[],weak:[],res:[]};renderQ()}
+function nextQ(){
+  QZ.i++;
+  if(QZ.i<QZ.queue.length) return renderQ();
+  if(QZ.missed.length){QZ.round++;QZ.queue=shuffle(QZ.missed);QZ.missed=[];QZ.i=0;QZ.res=[];return renderQ()}
+  quizEnd();
+}
+function renderQ(){
+  const box=$('#quizBox'); box.innerHTML='';
+  const tpl=QZ.queue[QZ.i], q=MK[tpl[0]](tpl[1]); window.__q=q;
+  const head=el('p','label',QZ.round===1?`Question ${QZ.i+1} of ${QZ.queue.length}`:`Round ${QZ.round}: practice what you missed (${QZ.i+1} of ${QZ.queue.length})`);
+  box.appendChild(head);
+  const dots=el('div','dots'); QZ.queue.forEach((_,k)=>{const d=el('span','dot');if(QZ.res[k])d.classList.add(QZ.res[k]==='first'?'first':'retry');else if(k===QZ.i)d.classList.add('cur');dots.appendChild(d)}); box.appendChild(dots);
+  const card=el('section','step active'); card.style.marginTop='12px';
+  card.appendChild(el('div','shead',`<p class="prompt">${q.prompt}</p>`));
+  const body=el('div'); card.appendChild(body);
+  const fb=el('div','fb'); fb.setAttribute('aria-live','polite'); card.appendChild(fb);
+  const act=el('div','row'); card.appendChild(act);
+  let tries=0,locked=false;
+  const say=(c,h)=>{fb.className='fb '+c;fb.innerHTML=h};
+  const finish=()=>{ locked=true; card.classList.remove('active');card.classList.add('done');
+    if(tries){QZ.missed.push(tpl);if(QZ.round===1)QZ.weak.push(weakLabel(tpl))} else if(QZ.round===1)QZ.first++;
+    QZ.res[QZ.i]=tries?'retry':'first';
+    card.appendChild(el('div','why',q.explain));
+    const last=QZ.i+1>=QZ.queue.length&&!QZ.missed.length;
+    const nx=el('button','btn',last?'See my score':'Next');nx.type='button';nx.onclick=nextQ;act.innerHTML='';act.appendChild(nx);nx.focus()};
+  const showMe=fn=>{const b=el('button','btn ghost','Show me the answer');b.type='button';b.onclick=()=>{fn();say('good','Here it is. This one will come back.');finish()};act.innerHTML='';act.appendChild(b)};
+
+  if(q.kind==='mc'){
+    const opts=el('div','opts'); body.appendChild(opts);
+    shuffle(q.options).forEach(o=>{const b=el('button','opt'+(q.text?' txt':''),o.t);b.type='button';
+      b.onclick=()=>{ if(locked) return;
+        if(o.ok){b.classList.add('right');opts.querySelectorAll('button').forEach(x=>x.disabled=true);say('good',tries?'Right.':'Right, first try.');finish()}
+        else{tries++;b.classList.add('wrong');b.disabled=true;say('bad',o.why||'Not quite. Try again.')}};
+      opts.appendChild(b)});
+  }
+  if(q.kind==='build'){
+    const ans=[]; const slot=el('div','slot'), tray=el('div','tiles'); body.append(slot,tray);
+    const tb=q.tiles.map((t,i)=>{const b=el('button','tile',t);b.type='button';b.onclick=()=>{if(locked||ans.includes(i))return;ans.push(i);paint()};tray.appendChild(b);return b});
+    function paint(){slot.innerHTML='';ans.forEach((ti,pos)=>{const b=el('button','tile on',q.tiles[ti]);b.type='button';b.onclick=()=>{if(locked)return;ans.splice(pos,1);paint()};slot.appendChild(b)});tb.forEach((b,i)=>b.disabled=ans.includes(i))}
+    paint();
+    const chk=el('button','btn','Check');chk.type='button';const clr=el('button','btn ghost','Clear');clr.type='button';
+    act.append(chk,clr); clr.onclick=()=>{if(!locked){ans.length=0;paint();fb.className='fb'}};
+    chk.onclick=()=>{ if(locked) return; const got=ans.map(i=>q.tiles[i]);
+      if(q.alts.some(a=>a.length===got.length&&a.every((x,j)=>x===got[j]))){say('good',tries?'Right.':'Right, first try.');finish()}
+      else{tries++;say('bad',tries===1?`Not yet. Hint: ${q.hook}`:'Not yet. Look at the study sheet, or tap Show me.');
+        if(tries>=2){const sm=el('button','btn ghost','Show me the answer');sm.type='button';sm.onclick=()=>{ans.length=0;const used=new Set();q.show.forEach(t=>{const i=q.tiles.findIndex((x,j)=>x===t&&!used.has(j));used.add(i);ans.push(i)});paint();say('good','Here it is. This one will come back.');finish()};act.appendChild(sm)}}};
+  }
+  if(q.kind==='units'){
+    const rows=el('div','urows'); body.appendChild(rows);
+    const sels=q.rows.map((r,j)=>{const w=el('div','urow');const id=`u${QZ.round}_${QZ.i}_${j}`;
+      w.innerHTML=`<label for="${id}">${r.label}</label><select id="${id}"><option value="">pick a unit</option>${q.choices.map(c=>`<option value="${c}">${U(c)}</option>`).join('')}</select>`;
+      rows.appendChild(w);return w.querySelector('select')});
+    const chk=el('button','btn','Check');chk.type='button';act.appendChild(chk);
+    chk.onclick=()=>{ if(locked) return; let bad=0;
+      sels.forEach((s,j)=>{s.classList.remove('ok','no');if(s.value===q.rows[j].ans)s.classList.add('ok');else{s.classList.add('no');bad++}});
+      if(!bad){sels.forEach(s=>s.disabled=true);say('good',tries?'Right.':'Right, first try.');finish()}
+      else{tries++;say('bad',`${bad} ${bad>1?'are':'is'} not right yet. Check the study sheet.`);
+        if(tries>=2){const sm=el('button','btn ghost','Show me the answer');sm.type='button';sm.onclick=()=>{sels.forEach((s,j)=>{s.value=q.rows[j].ans;s.classList.remove('no');s.classList.add('ok');s.disabled=true});say('good','Here it is. This one will come back.');finish()};act.appendChild(sm)}}};
+  }
+  box.appendChild(card);
+}
+function quizEnd(){
+  const box=$('#quizBox'); box.innerHTML='';
+  const weak=uniq(QZ.weak);
+  const c=el('div','fin');
+  c.innerHTML=`<h2>Drill done</h2><div class="bigscore">${QZ.first} of ${QZ.total}</div><p style="margin:0">right the first time${QZ.round>1?`, and you got the rest right after ${QZ.round-1} more ${QZ.round>2?'rounds':'round'}`:''}.${weak.length?` Study these again: ${weak.join(', ')}.`:' No weak spots.'}</p>`;
+  const row=el('div','row'); row.style.justifyContent='center';
+  const again=el('button','btn','Same drill, new questions');again.type='button';again.onclick=()=>startDrill(QZ.mode);
+  const menu=el('button','btn ghost','Pick another drill');menu.type='button';menu.onclick=quizIntro;
+  row.append(again,menu); c.appendChild(row); box.appendChild(c);
+}
+
+window.__app={get cur(){return cur},GEN,REVIEW,MK,drillList};
+setProblem(REVIEW[0].make(),0);
+})();
+</script>
+</body></html>
