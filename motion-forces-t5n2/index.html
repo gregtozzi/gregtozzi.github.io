@@ -92,7 +92,7 @@ code,.mono{font-family:var(--mono);font-weight:500;font-size:.92em}
 [hidden]{display:none!important}
 .stack{display:flex;flex-direction:column;gap:16px;min-width:0}
 .tabs{display:flex;gap:8px}
-.tab{flex:1;background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:10px;font-weight:700;cursor:pointer;min-height:48px}
+.tab{flex:1;font-size:15px;background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:10px;font-weight:700;cursor:pointer;min-height:48px}
 .tab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .tools{display:flex;flex-wrap:wrap;gap:8px}
 .tool{border:2px solid var(--line);background:transparent;border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:700;min-height:44px}
@@ -131,8 +131,9 @@ code,.mono{font-family:var(--mono);font-weight:500;font-size:.92em}
   </header>
 
   <div class="tabs" role="tablist">
-    <button class="tab" role="tab" data-t="p" aria-selected="true" type="button">Step-by-step problems</button>
+    <button class="tab" role="tab" data-t="p" aria-selected="true" type="button">Step by step</button>
     <button class="tab" role="tab" data-t="q" aria-selected="false" type="button">Formula quiz</button>
+    <button class="tab" role="tab" data-t="w" aria-selected="false" type="button">Word problems</button>
   </div>
 
   <div id="tabProblems" class="stack">
@@ -176,6 +177,10 @@ code,.mono{font-family:var(--mono);font-weight:500;font-size:.92em}
     </details>
     <details class="panel"><summary>Study sheet: key ideas</summary><div id="ideasList"></div></details>
     <div class="panel"><p class="label">Quiz yourself</p><div id="quizBox"></div></div>
+  </div>
+
+  <div id="tabWord" class="stack" hidden>
+    <div class="panel"><p class="label">Word problem mini quiz</p><p class="sub" style="margin:0 0 12px">Six word problems. Pick the formula, then solve it with the right unit. Two tries on the answer, then you get the worked solution.</p><div id="wordBox"></div></div>
   </div>
 </div>
 
@@ -504,8 +509,9 @@ setProblem=function(p,ri){ if(ri>=0&&!p.genKey) p.genKey=KEYMAP[ri]; _set(p,ri) 
 let quizReady=false;
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',String(x===b)));
-  $('#tabProblems').hidden=b.dataset.t!=='p'; $('#tabQuiz').hidden=b.dataset.t!=='q';
+  $('#tabProblems').hidden=b.dataset.t!=='p'; $('#tabQuiz').hidden=b.dataset.t!=='q'; $('#tabWord').hidden=b.dataset.t!=='w';
   if(b.dataset.t==='q'&&!quizReady){quizReady=true;initQuizTab()}
+  if(b.dataset.t==='w'&&!wordReady){wordReady=true;startWord()}
 });
 
 /* ---------- formula + unit drills ---------- */
@@ -708,7 +714,81 @@ function quizEnd(){
   row.append(again,menu); c.appendChild(row); box.appendChild(c);
 }
 
-window.__app={get cur(){return cur},GEN,REVIEW,MK,drillList};
+/* ---------- word problem mini quiz ---------- */
+let WQ=null, wordReady=false;
+function judge(s,v,unitSel){
+  if(isNaN(v)) return {msg:'Type a number first.',soft:true};
+  if(near(v,s.ans,s.tol)){
+    if(s.unitOptions&&!unitSel) return {msg:'The number is right. Now pick the unit.',soft:true};
+    if(s.unitOptions&&unitSel!==s.unit) return {msg:'The number is right, but the unit is not. Think about what this quantity measures.'};
+    return {ok:true};
+  }
+  const trap=(s.traps||[]).find(t=>near(v,t.v,Math.max(s.tol,Math.abs(t.v)*0.01)));
+  if(trap) return {msg:trap.msg};
+  if(Math.abs(v-s.ans)<=Math.abs(s.ans)*0.03) return {msg:'Very close. Check your arithmetic or rounding.'};
+  return {msg:'Not yet. '+s.hint};
+}
+function startWord(){
+  const ks=shuffle(['speed','distance','time','accel',pick(['forceA','forceF']),'momentum']);
+  WQ={list:ks.map(k=>{const p=GEN[k]();p.genKey=k;return p}),i:0,res:[],miss:[]};
+  renderWord();
+}
+function renderWord(){
+  const box=$('#wordBox'); box.innerHTML='';
+  const n=WQ.list.length, p=WQ.list[WQ.i], fs=p.steps[1], ns=p.steps[p.steps.length-1];
+  box.appendChild(el('p','label',`Word problem ${WQ.i+1} of ${n}`));
+  const dots=el('div','dots'); WQ.list.forEach((_,k)=>{const d=el('span','dot');if(WQ.res[k])d.classList.add(WQ.res[k]==='first'?'first':'retry');else if(k===WQ.i)d.classList.add('cur');dots.appendChild(d)}); box.appendChild(dots);
+  const card=el('section','step active'); card.style.marginTop='12px';
+  card.appendChild(el('div','shead',`<span class="badge">${WQ.i+1}</span><p class="prompt" style="font-weight:400;font-size:19px">${plainText(p.text)}</p>`));
+  const a=el('div'); const b=el('div'); b.hidden=true;
+  a.appendChild(el('p','prompt','Which formula do you use?'));
+  const opts=el('div','opts'); opts.style.marginTop='8px'; a.appendChild(opts);
+  const fb=el('div','fb'); fb.setAttribute('aria-live','polite');
+  const act=el('div','row');
+  card.append(a,b,fb,act);
+  let ft=0, nt=0, locked=false;
+  const say=(c,h)=>{fb.className='fb '+c;fb.innerHTML=h};
+  const finish=(assisted)=>{ locked=true; card.classList.remove('active');card.classList.add('done');
+    const clean=!assisted&&ft===0&&nt===0; WQ.res[WQ.i]=clean?'first':'retry'; if(!clean) WQ.miss.push(p);
+    const nx=el('button','btn',WQ.i+1<n?'Next problem':'See my score');nx.type='button';
+    nx.onclick=()=>{WQ.i++;WQ.i<n?renderWord():endWord()}; act.innerHTML='';act.appendChild(nx);nx.focus()};
+  shuffle(fs.options).forEach(o=>{const bt=el('button','opt',o.t);bt.type='button';
+    bt.onclick=()=>{ if(locked||!b.hidden) return;
+      if(o.ok){bt.classList.add('right');opts.querySelectorAll('button').forEach(x=>x.disabled=true);say('good',ft?'Right. Now solve it.':'Right. Now solve it.');b.hidden=false;const f=b.querySelector('input');if(f)f.focus()}
+      else{ft++;bt.classList.add('wrong');bt.disabled=true;say('bad',o.why||'Not quite.')}};
+    opts.appendChild(bt)});
+  // part B
+  b.appendChild(el('p','prompt','Solve it. Enter your answer and pick the unit.'));
+  const w=el('div','inwrap'); w.style.marginTop='8px';
+  w.innerHTML=`<label for="wa${WQ.i}" style="position:absolute;left:-9999px">Your answer</label><input id="wa${WQ.i}" inputmode="decimal" autocomplete="off" placeholder="your answer">`;
+  const inp=w.querySelector('input'); const sel=el('select'); sel.id=`wu${WQ.i}`; sel.setAttribute('aria-label','Unit');
+  sel.innerHTML='<option value="">unit?</option>'+ns.unitOptions.map(u=>`<option>${u}</option>`).join(''); w.appendChild(sel); b.appendChild(w);
+  const chk=el('button','btn','Check');chk.type='button';chk.style.marginTop='10px';b.appendChild(chk);
+  const check=()=>{ if(locked) return; const r=judge(ns,parse(inp.value),sel.value);
+    if(r.ok){inp.classList.add('ok');inp.readOnly=true;sel.disabled=true;chk.hidden=true;say('good',(ft||nt)?'Correct.':'Correct, first try.');finish(false);return}
+    if(!r.soft) nt++;
+    inp.classList.toggle('no',!r.soft); say('bad',r.msg);
+    if(nt>=2&&!act.querySelector('.show')){const sm=el('button','btn ghost show','Show the worked solution');sm.type='button';
+      sm.onclick=()=>{inp.value=ns.round||r4(ns.ans);inp.classList.remove('no');inp.classList.add('ok');sel.value=ns.unit;inp.readOnly=true;sel.disabled=true;chk.hidden=true;
+        const steps=p.steps.slice(1).filter(s=>s.kind!=='fill').map(s=>s.explain).filter(Boolean);
+        say('good',`Answer: ${ns.round||r4(ns.ans)} ${ns.unit}`);card.appendChild(el('div','why',steps.join(' ')));finish(true)};
+      act.appendChild(sm)}};
+  chk.onclick=check; inp.addEventListener('keydown',e=>{if(e.key==='Enter')check()});
+  box.appendChild(card);
+}
+function endWord(){
+  const box=$('#wordBox'); box.innerHTML='';
+  const n=WQ.list.length, first=WQ.res.filter(r=>r==='first').length;
+  const c=el('div','fin');
+  c.innerHTML=`<h2>Mini quiz done</h2><div class="bigscore">${first} of ${n}</div><p style="margin:0">solved on the first try.${WQ.miss.length?' Practice the ones you missed step by step:':' No misses. Nice work.'}</p>`;
+  const row=el('div','row'); row.style.justifyContent='center';
+  WQ.miss.forEach(p=>{const bt=el('button','btn ghost',`Walk me through: ${plainText(p.text).slice(0,0)||NAMES[{speed:'speed',distance:'distance',time:'time',accel:'accel',forceA:'accel',forceF:'force',momentum:'momentum'}[p.genKey]]}`);bt.type='button';
+    bt.onclick=()=>{document.querySelector('.tab[data-t=p]').click();setProblem(GEN[p.genKey](),-1);window.scrollTo({top:0})};row.appendChild(bt)});
+  const again=el('button','btn','New mini quiz');again.type='button';again.onclick=startWord;row.appendChild(again);
+  c.appendChild(row); box.appendChild(c);
+}
+
+window.__app={get WQ(){return WQ},get cur(){return cur},GEN,REVIEW,MK,drillList};
 setProblem(REVIEW[0].make(),0);
 })();
 </script>
