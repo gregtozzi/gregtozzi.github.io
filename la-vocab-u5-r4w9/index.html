@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Unit 5 Vocabulary</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&display=swap">
+<style>
+/* Layout: graph-paper page, one column. Three tabs (Learn, Practice, Test); drills show one question card at a time and keep it open until it is answered correctly. */
+:root{
+  --bg:#EEF3F8; --grid:#D9E3EF; --card:#FFFFFF; --ink:#12203A; --muted:#566782; --line:#C6D3E3;
+  --accent:#2457D6; --accent-ink:#FFFFFF; --hl:#FFE27A;
+  --good:#17784F; --good-bg:#E2F4EA; --bad:#B3261E; --bad-bg:#FBE9E7; --hint-bg:#FFF2C4; --hint-ink:#5A4300;
+  --display:'Bricolage Grotesque','Trebuchet MS',system-ui,sans-serif;
+  --body:'Atkinson Hyperlegible',system-ui,-apple-system,'Segoe UI',sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F1726; --grid:#18243B; --card:#172236; --ink:#E8EEF8; --muted:#9BACC6; --line:#2B3B58;
+  --accent:#7AA2FF; --accent-ink:#0B1530; --hl:#6E5C0F;
+  --good:#5FD39A; --good-bg:#143225; --bad:#FF8B80; --bad-bg:#3A1B1B; --hint-bg:#3A3216; --hint-ink:#F2DE9A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1726; --grid:#18243B; --card:#172236; --ink:#E8EEF8; --muted:#9BACC6; --line:#2B3B58;
+  --accent:#7AA2FF; --accent-ink:#0B1530; --hl:#6E5C0F;
+  --good:#5FD39A; --good-bg:#143225; --bad:#FF8B80; --bad-bg:#3A1B1B; --hint-bg:#3A3216; --hint-ink:#F2DE9A; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;min-height:100vh;
+  background-color:var(--bg);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.5;
+  padding-block:20px 56px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(28px,7vw,38px);line-height:1.1;margin:0;text-wrap:balance}
+.sub{color:var(--muted);margin:4px 0 0}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
+.stack{display:flex;flex-direction:column;gap:14px;min-width:0}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.label{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:0 0 8px}
+.tabs{display:flex;gap:8px}
+.tab{flex:1;font-size:16px;background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:10px;font-weight:700;cursor:pointer;min-height:48px}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:8px;padding:9px 16px;font-weight:700;cursor:pointer;min-height:44px}
+.btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.sp{flex:1}
+
+/* Learn */
+.wl{display:flex;flex-direction:column;gap:8px}
+details.wd{background:var(--card);border:1.5px solid var(--line);border-radius:10px}
+details.wd[open]{border-color:var(--accent)}
+details.wd summary{cursor:pointer;padding:12px 14px;display:flex;flex-wrap:wrap;gap:2px 12px;align-items:baseline;min-height:48px;list-style:none}
+details.wd summary::-webkit-details-marker{display:none}
+details.wd summary::after{content:"+";margin-left:auto;font-weight:700;color:var(--accent);font-size:22px;line-height:1}
+details.wd[open] summary::after{content:"–"}
+.wn{font-family:var(--display);font-weight:700;font-size:22px}
+.wp{color:var(--muted);font-size:15px}
+.ws{flex-basis:100%;color:var(--muted);font-size:16px;order:5}
+.wb{padding:0 14px 14px;display:flex;flex-direction:column;gap:8px}
+.wb p{margin:0}
+.pos{font-style:italic;color:var(--muted)}
+.exs{display:flex;flex-direction:column;gap:6px;border-left:4px solid var(--line);padding-left:12px}
+.exs mark,.ctx mark{background:var(--hl);color:inherit;padding:0 3px;border-radius:3px;font-weight:700}
+.sa{font-size:16px;color:var(--muted)}
+.sa b{color:var(--ink)}
+
+/* Practice menu */
+.menu{display:flex;flex-direction:column;gap:10px}
+.mb{text-align:left;background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer;display:flex;flex-direction:column;min-height:60px}
+.mb:hover{border-color:var(--accent)}
+.mb b{font-size:19px}
+.mb span{color:var(--muted);font-size:16px}
+
+/* Drill */
+.top{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.top .cnt{color:var(--muted);font-size:15px;margin-left:auto}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:0}
+.q{background:var(--card);border:1.5px solid var(--accent);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.q.ok{border-color:var(--good)}
+.prompt{margin:0;font-weight:700;font-size:19px}
+.ctx{margin:0;padding:10px 12px;background:var(--bg);border-radius:8px;border-left:4px solid var(--accent)}
+.ctx.sent{font-size:19px;line-height:1.6}
+.ctx.text{font-style:italic}
+.blank{display:inline-block;min-width:90px;border-bottom:2px solid var(--ink);margin:0 2px;height:1em}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opts.two{flex-direction:row;flex-wrap:wrap}
+.opts.two .opt{flex:1 1 140px;text-align:center}
+.opt{text-align:left;background:transparent;border:1.5px solid var(--line);border-radius:8px;padding:10px 12px;cursor:pointer;min-height:48px;font-size:17px;line-height:1.35}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:disabled{cursor:default}
+.opt.wrong{border-color:var(--bad);background:var(--bad-bg);color:var(--bad)}
+.opt.right{border-color:var(--good);background:var(--good-bg);color:var(--good);font-weight:700}
+.bank{display:flex;flex-wrap:wrap;gap:6px}
+.bank span{border:1.5px solid var(--line);border-radius:999px;padding:2px 10px;font-size:15px;background:var(--card)}
+.typed{display:flex;gap:8px;flex-wrap:wrap}
+.typed input{flex:1 1 180px;min-width:0;min-height:48px;background:var(--bg);border:1.5px solid var(--line);border-radius:8px;padding:8px 12px;font-size:19px}
+.typed input.no{border-color:var(--bad);background:var(--bad-bg)}
+.typed input.ok{border-color:var(--good);background:var(--good-bg)}
+.fb{border-radius:8px;font-size:16px}
+.fb.good{background:var(--good-bg);color:var(--good);padding:10px 12px}
+.fb.bad{background:var(--bad-bg);color:var(--bad);padding:10px 12px}
+.why{background:var(--hint-bg);color:var(--hint-ink);border-radius:8px;padding:10px 12px;font-size:16px}
+.why p{margin:0}.why p+p{margin-top:4px}
+.fin{text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 16px}
+.fin h2{font-family:var(--display);margin:0;font-size:26px}
+.bigscore{font-weight:700;font-size:36px;color:var(--good)}
+.miss{text-align:left;width:100%;display:flex;flex-direction:column;gap:6px;font-size:16px}
+.miss div{border-top:1px solid var(--line);padding-top:6px}
+
+/* Flashcard */
+.fc{min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;cursor:pointer;padding:20px}
+.fc .big{font-family:var(--display);font-weight:700;font-size:34px}
+.fc .hint{color:var(--muted);font-size:15px}
+.fc p{margin:0}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style></head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Unit 5 Vocabulary</h1>
+    <p class="sub">Language Arts · 20 words. Learn them, practice them, then test yourself. Wrong answers tell you why.</p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" data-t="learn" aria-selected="true" type="button">Learn</button>
+    <button class="tab" role="tab" data-t="practice" aria-selected="false" type="button">Practice</button>
+    <button class="tab" role="tab" data-t="test" aria-selected="false" type="button">Test</button>
+  </div>
+
+  <div id="vLearn" class="stack"></div>
+  <div id="vPractice" class="stack" hidden></div>
+  <div id="vTest" class="stack" hidden></div>
+</div>
+
+<script>
+/* ---------- Data: Vocabulary Workshop Level, Unit 5 (pages 62-69) ---------- */
+const WORDS=[
+{k:'addendum',stem:'addendum',pr:'(ə den′ dəm)',pos:'n.',def:'a thing that is added; an appendix or addition to a book or written document',short:'something added, like an appendix or extra note',
+ ex:[['The woman amended her will with an ___ when her husband suddenly died.','addendum']],syn:'attachment, rider, extension',ant:''},
+{k:'aghast',stem:'aghast',pr:'(ə gast′)',pos:'adj.',def:'filled with amazement, disgust, fear, or terror',short:'filled with horror, fear, or shock',
+ ex:[['People were ___ at the senseless brutality of the crime.','aghast']],syn:'shocked, horrified, stupefied',ant:'delighted, overjoyed, unmoved'},
+{k:'ample',stem:'ample',pr:'(am′ pəl)',pos:'adj.',def:'more than enough, large, spacious',short:'more than enough; plenty',
+ ex:[['Thanks to the wet spring weather, birds and other animals will have an ___ food supply for the rest of the year.','ample']],syn:'sufficient, adequate, considerable',ant:'insufficient, inadequate'},
+{k:'apparition',stem:'apparition',pr:'(ap ə rish′ ən)',pos:'n.',def:'a ghost or ghostly figure; an unexplained or unusual appearance',short:'a ghost or ghostly figure',
+ ex:[['The vivid ___ seemed so real that it completely unnerved me.','apparition']],syn:'phantom, specter',ant:''},
+{k:'assert',stem:'assert',pr:'(ə sərt′)',pos:'v.',def:'to declare or state as truth, maintain or defend, put forward forcefully',short:'to declare firmly that something is true',
+ ex:[['Throughout the trial and the lengthy appeal process that followed, the defendant ___ her innocence.','asserted']],syn:'affirm, avow',ant:''},
+{k:'cower',stem:'cower',pr:'(kou′ ər)',pos:'v.',def:'to crouch or shrink away in fear or shame',short:'to crouch or shrink away in fear',
+ ex:[['The kittens ___ in the corner, frightened by the huge, growling dog.','cowered']],syn:'wince, flinch',ant:'stand up to'},
+{k:'disdain',stem:'disdain',pr:'(dis dān′)',pos:'v., n.',def:'(v.) to look upon with scorn; to refuse scornfully; (n.) a feeling of contempt',short:'to look down on with scorn',
+ ex:[['I ___ their cowardly behavior.','disdain'],['Fair-minded people feel ___ for racism.','disdain']],syn:'(v.) spurn, reject',ant:'(v.) revere, venerate, esteem, respect'},
+{k:'epitaph',stem:'epitaph',pr:'(ep′ ə taf)',pos:'n.',def:'a brief statement written on a tomb or gravestone',short:'words written on a tomb or gravestone',
+ ex:[['Most people never stop to consider the words that might one day appear as their own ___.','epitaph']],syn:'tombstone inscription',ant:''},
+{k:'ethical',stem:'ethic',pr:'(eth′ ə kəl)',pos:'adj.',def:'having to do with morals, values, right and wrong; in accordance with standards of right conduct; requiring a prescription for purchase',short:'having to do with right and wrong; morally good',
+ ex:[['New developments in medicine often lead to discussions of important ___ questions.','ethical']],syn:'upright, virtuous, honorable',ant:'immoral, unscrupulous, dishonest'},
+{k:'facetious',stem:'faceti',pr:'(fə sē′ shəs)',pos:'adj.',def:'humorous, not meant seriously',short:'joking; not meant seriously',
+ ex:[['We had to laugh at her ___ remarks.','facetious']],syn:'comical, witty, tongue-in-cheek',ant:'serious, humorless'},
+{k:'inaudible',stem:'inaudible',pr:'(in ô′ də bəl)',pos:'adj.',def:'not able to be heard',short:'not able to be heard',
+ ex:[['Some high-frequency sounds are ___ to even the keenest human ear.','inaudible']],syn:'faint, indistinct',ant:'audible, perceptible'},
+{k:'indiscriminate',stem:'indiscriminate',pr:'(in dis krim′ ə nət)',pos:'adj.',def:'without restraint or control; unselective',short:'random; not choosing carefully',
+ ex:[['The ___ slaughter of white whales brought that species to the brink of extinction.','indiscriminate']],syn:'haphazard, random, uncritical',ant:'selective, discriminating, judicious'},
+{k:'intrigue',stem:'intrigu',pr:'(n., in′ trēg; v., in trēg′)',pos:'n., v.',def:'(n.) crafty dealings, underhanded plotting; (v.) to form and carry out plots; to puzzle or excite the curiosity',short:'secret plotting; or to fascinate',
+ ex:[['Investigators uncovered a shocking network of lies and international ___.','intrigue'],['The old album full of faded family pictures and postcards from exotic places ___ me.','intrigued']],syn:'(n.) scheme, plot, conspiracy',ant:'(n.) fair play'},
+{k:'jurisdiction',stem:'jurisdiction',pr:'(jür is dik′ shən)',pos:'n.',def:'an area of authority or control; the right to administer justice',short:'an area of authority; the right to apply the law',
+ ex:[['Cases involving robbery and assault are usually tried in the ___ of the state courts.','jurisdiction']],syn:'purview, supervision',ant:''},
+{k:'plausible',stem:'plausible',pr:'(plô′ zə bəl)',pos:'adj.',def:'appearing true, reasonable, or fair',short:'believable; seeming true or reasonable',
+ ex:[['Their story didn’t sound ___ to me.','plausible']],syn:'believable, probable',ant:'improbable, unbelievable, unlikely'},
+{k:'plebeian',stem:'plebeian',pr:'(plə bē′ ən)',pos:'adj., n.',def:'(adj.) common, vulgar; belonging to the lower class; (n.) a common person, member of the lower class',short:'common; of the lower class',
+ ex:[['The couple’s taste in cars is quite ___.','plebeian'],['At one time, the ___ of ancient Rome were excluded from holding public office of any kind.','plebeians']],syn:'(adj.) lowborn, proletarian, coarse, unrefined',ant:'(adj.) aristocratic, refined, cultivated'},
+{k:'prodigal',stem:'prodigal',pr:'(präd′ ə gəl)',pos:'adj., n.',def:'(adj.) wastefully extravagant; lavishly or generously abundant; (n.) one who is wasteful and self-indulgent',short:'wastefully extravagant; lavish',
+ ex:[['We have a tight budget, but we make an exception for ___ celebrations of family birthdays.','prodigal'],['The elderly man told us that he greatly regretted the years he spent living the life of a ___.','prodigal']],syn:'(adj.) improvident; (n.) spendthrift, wastrel',ant:'(adj.) frugal, economical, stingy, miserly'},
+{k:'proximity',stem:'proximity',pr:'(präk sim′ ə tē)',pos:'n.',def:'nearness, closeness',short:'nearness; closeness',
+ ex:[['The house’s ___ to schools is an asset.','proximity']],syn:'',ant:'distance, remoteness'},
+{k:'pulverize',stem:'pulveriz',pr:'(pəl′ və rīz)',pos:'v.',def:'to grind or pound to a powder or dust; to destroy or overcome (as though by smashing into fragments)',short:'to crush into powder; to destroy',
+ ex:[['At many old mills in Vermont, granite stones were used to ___ the grain.','pulverize']],syn:'compress, demolish',ant:''},
+{k:'volatile',stem:'volatile',pr:'(väl′ ə təl)',pos:'adj.',def:'highly changeable, fickle; tending to become violent or explosive; changing readily from the liquid to the gaseous state',short:'quickly changing; likely to explode',
+ ex:[['A person who is usually calm and collected may nevertheless sometimes behave in a ___ manner.','volatile']],syn:'unstable, erratic',ant:'stable, steady, static, inert, dormant'}
+];
+const BYK={};WORDS.forEach(w=>BYK[w.k]=w);
+const f2w=f=>WORDS.find(w=>f.toLowerCase().startsWith(w.stem));
+
+/* p.65-66 "Choosing the Right Word": [sentence, right, wrong] */
+const CHOOSE=[
+['I wonder how many asteroids Superman could ___ with his bare hands.','pulverize','disdain'],
+['You can show respect for your supervisors without seeming to ___ whenever one of them speaks to you.','cower','assert'],
+['Deciding who is or isn’t eligible for school athletic teams is not within the ___ of the student council.','jurisdiction','proximity'],
+['The purpose of this experiment is to find out whether a substance will dissolve more rapidly in water if it is thoroughly ___.','pulverized','cowered'],
+['Although I may not agree with what you have to say, I will always ___ your right to say it.','assert','disdain'],
+['Your thoughtless remarks hurt me deeply, even though you say that you were merely trying to be ___.','facetious','plausible'],
+['In recent decades, we have been forced to make greater use of our ___ coal supply to meet our growing energy needs.','ample','inaudible'],
+['It takes a practiced eye to make out the ___ on old, weather-beaten tombstones in a country churchyard.','epitaphs','addendums'],
+['One of the most ___ mysteries I have ever read involved a priest and was set in the Wild West.','intriguing','prodigal'],
+['I do not believe that people who come from poor families should be regarded as ___.','plebeians','apparitions'],
+['Government officials believe the pirate situation occurring in the high seas remains ___ and requires immediate action.','volatile','inaudible'],
+['My neighbor’s furniture is supposed to be “original” and “colorful,” but I think it is a(n) ___ collection of junk.','indiscriminate','facetious'],
+['It will take the two of us months of strict economizing to make up for this one weekend of ___ shopping.','prodigal','ethical'],
+['In Shakespeare’s <i>Macbeth</i>, the witches show the title character three prophetic ___.','apparitions','ethics'],
+['I find my friend’s stories about life in her native country most ___.','intriguing','plebeian'],
+['Only a snob would show such ___ for someone who doesn’t drive a fancy car.','disdain','intrigue'],
+['The tenant wanted the landlord to include a mold ___ in his lease so the owner would be responsible for any mold problems.','addendum','apparition'],
+['The ___ of the leaders’ ideas on many subjects made it easy for them to work together during that critical period of our history.','proximity','epitaph'],
+['Sometimes it is difficult to tell if my brother is being ___ or if he really means the things he says.','facetious','ethical'],
+['The voters, ___ that such scandal could occur in their town, demanded the mayor’s immediate resignation.','aghast','volatile'],
+['I thought that my whispers to you were ___, but I learned otherwise when the teacher told me in no uncertain terms to be quiet.','inaudible','prodigal'],
+['Her moods are so ___ that we never know if she will be in a good humor or down in the dumps.','volatile','ample'],
+['His explanation that he is failing math because “the teacher is down on me” doesn’t seem ___.','plausible','volatile'],
+['Lawyers may be punished by disbarment if it can be shown that they have violated the ___ of the legal profession.','ethics','epitaphs'],
+['The ___ of nuclear war inspired the international agreement.','proximity','apparition']
+];
+
+/* p.67-68 "Completing the Sentence": [sentence, answer, [accepted forms]] */
+const COMPLETE=[
+['The giant crushers lifted the boulders and quickly ___ them into a uniform gray powder.','pulverized',['pulverized']],
+['The way the child ___ around Rex gave me the impression that he had a fear of dogs.','cowered',['cowered']],
+['The planning board refused to allow the construction of a factory in close ___ to our school building.','proximity',['proximity']],
+['People of all religions strive to live up to high moral and ___ standards.','ethical',['ethical']],
+['In that elegant French restaurant, which serves all kinds of fancy foods, she ordered a(n) ___ ham and cheese on rye.','plebeian',['plebeian']],
+['I appreciate your ___ display of gratitude, but a simple “thank you” would do.','prodigal',['prodigal']],
+['Did Ben Jonson write the ___ engraved on Shakespeare’s tombstone?','epitaph',['epitaph']],
+['For the moment the crowd was quiet and subdued, but we knew that it was so ___ that it might become ugly and dangerous at any time.','volatile',['volatile']],
+['I hope he was just being ___ when he said that my dancing reminded him of a trained bear.','facetious',['facetious']],
+['Although they did not dare to attack the emperor publicly, they ___ in secret to bring about his downfall.','intrigued',['intrigued']],
+['Since you were given ___ time to prepare your report, I can … no excuse for your failure to complete it.','ample',['ample']],
+['A(n) ___ TV viewer, who watches any program, good or bad, is bound to waste a lot of time.','indiscriminate',['indiscriminate']],
+['Observers on the ground were ___ to see the rocket explode and plunge back to earth seconds after launch.','aghast',['aghast']],
+['The writer of the mystery story set up an interesting situation, but in my opinion the ending was not ___.','plausible',['plausible']],
+['Regulation of radio and TV stations falls within the ___ of the federal government.','jurisdiction',['jurisdiction']],
+['The “ghostly figure” you think you saw in the graveyard was no more than a(n) ___ created by your imagination.','apparition',['apparition']],
+['Who would be so proud or so foolish as to ___ a helping hand in time of real need?','disdain',['disdain']],
+['Because the P.A. system was not working, the voice of the speaker was completely ___ to most of the people in the hall.','inaudible',['inaudible']],
+['In answer to unfair criticisms, we proudly ___ that our family has always been generous in its aid to the needy.','assert',['assert']],
+['Notes from a rare interview were included as a(n) ___ in the second edition of the comedian’s biography.','addendum',['addendum']]
+];
+
+/* p.66 Synonyms / Antonyms: [phrase with <b>, answer word, 'syn'|'ant', boldface text] */
+const SYNANT=[
+['a function that makes the television <b>muted</b>','inaudible','syn','muted'],
+['<b>crushed</b> turquoise to use as paint pigment','pulverize','syn','crushed'],
+['under the <b>authorization</b> of the United Nations','jurisdiction','syn','authorization'],
+['a letter that includes a <b>postscript</b>','addendum','syn','postscript'],
+['<b>mystified</b> by their unusual behavior','intrigue','syn','mystified'],
+['refused to help the <b>squanderer</b>','prodigal','syn','squanderer'],
+['known for having a highly <b>unpredictable</b> disposition','volatile','syn','unpredictable'],
+['the clearest way to <b>pronounce</b> our freedom','assert','syn','pronounce'],
+['<b>cringed</b> as the tornado roared past','cower','syn','cringed'],
+['terrified by <b>spirits</b>','apparition','syn','spirits'],
+['a person with <b>thrifty</b> spending habits','prodigal','ant','thrifty'],
+['pointed out an <b>omission</b> in the contract','addendum','ant','omission'],
+['made a reply that was <b>easily heard</b>','inaudible','ant','easily heard'],
+['offered us a <b>far-fetched</b> alibi','plausible','ant','far-fetched'],
+['visited by a <b>corporeal</b> being','apparition','ant','corporeal']
+];
+
+/* p.69 Vocabulary in Context (A Christmas Carol) */
+const LIT=[
+{ex:'The <b>apparition</b> walked backward from him; and at every step it took, the window raised itself a little, so that when the specter reached it, it was wide open.',
+ q:'An <b>apparition</b> is a',o:['celebrity','diplomat','phantom','tenant'],a:'phantom',w:'apparition'},
+{ex:'“I am the Ghost of Christmas Present,” said the Spirit. “Look upon me!” Scrooge reverently did so. It was clothed in one simple green robe, or mantle, bordered with white fur. This garment hung so loosely on the figure, that its capacious breast was bare, as if <b>disdaining</b> to be warded or concealed by any artifice.',
+ q:'The act of <b>disdaining</b> involves',o:['reverence','rejection','speculation','deliberation'],a:'rejection',w:'disdain'},
+{ex:'Its feet, observable beneath the <b>ample</b> folds of the garment, were also bare; and on its head it wore no other covering than a holly wreath, set here and there with shining icicles.',
+ q:'If an item of clothing has <b>ample</b> folds, the folds are',o:['uncommon','appealing','burdensome','abundant'],a:'abundant',w:'ample'},
+{ex:'Uncle Scrooge had imperceptibly become so . . . light of heart, that he would have pledged the unconscious company in return, and thanked them in an <b>inaudible</b> speech, if the Ghost had given him time.',
+ q:'Speech that is <b>inaudible</b> is',o:['hushed','distinct','enthusiastic','deafening'],a:'hushed',w:'inaudible'},
+{ex:'Scrooge resumed his labors with an improved opinion of himself, and in a more <b>facetious</b> temper than was usual with him.',
+ q:'Someone who is <b>facetious</b> is NOT',o:['teasing','honest','somber','flippant'],a:'somber',w:'facetious',
+ note:{honest:'Honesty isn’t the opposite of joking. A person can be honest and joking at the same time.',teasing:'Teasing is a kind of joking, so it fits <b>facetious</b>.',flippant:'Flippant means not serious about something, which fits <b>facetious</b>.'}}
+];
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const pick=(a,n)=>shuffle(a).slice(0,n);
+const blank=s=>s.replace('___','<span class="blank"></span>');
+const filled=(s,a)=>s.replace('___','<mark>'+a+'</mark>');
+const wordCard=w=>`<p><b>${w.k}</b> <span class="pos">${w.pos}</span> ${w.pr}</p><p>${w.def}</p>`;
+function el(t,c,h){const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e}
+
+/* ---------- question builders ---------- */
+function qMeaning(w){
+  const others=pick(WORDS.filter(x=>x!==w),3);
+  const opts=shuffle([{t:w.short,ok:true},...others.map(o=>({t:o.short,note:'That’s the meaning of “'+o.k+'.”'}))]);
+  return {kind:'mc',prompt:`What does <b>${w.k}</b> mean?`,opts,why:wordCard(w),w:w.k};
+}
+function qWord(w){
+  const others=pick(WORDS.filter(x=>x!==w),3);
+  const opts=shuffle([{t:w.k,ok:true},...others.map(o=>({t:o.k,note:'“'+o.k+'” means '+o.short+'.'}))]);
+  return {kind:'mc',prompt:'Which word means this?',ctx:'<b>'+w.short+'</b>',opts,why:wordCard(w),w:w.k};
+}
+function qChoose(it){
+  const [s,ok,no]=it;const w=f2w(ok),x=f2w(no);
+  return {kind:'mc',two:true,prompt:'Pick the word that better completes the sentence.',ctx:blank(s),ctxCls:'sent',
+    opts:shuffle([{t:ok,ok:true},{t:no,note:'“'+x.k+'” means '+x.short+'. It doesn’t fit this sentence.'}]),
+    why:'<p>'+filled(s,ok)+'</p>'+wordCard(w),w:w.k};
+}
+function qComplete(it){
+  const [s,ans,acc]=it;const w=f2w(ans);
+  return {kind:'type',prompt:'Type the word from the bank that completes the sentence. Check the word form!',ctx:blank(s),ctxCls:'sent',bank:true,
+    accept:acc,stem:w.stem,ans,why:'<p>'+filled(s,ans)+'</p>'+wordCard(w),w:w.k};
+}
+function qSyn(it){
+  const [ph,a,type,bold]=it;const w=BYK[a];
+  const others=pick(WORDS.filter(x=>x!==w),3);
+  const opts=shuffle([{t:w.k,ok:true},...others.map(o=>({t:o.k,note:'“'+o.k+'” means '+o.short+'.'}))]);
+  const pr=type==='syn'?'Choose the unit word that means the <b>same or almost the same</b> as the boldface words.':'Choose the unit word that is <b>most nearly opposite</b> to the boldface words.';
+  return {kind:'mc',prompt:pr,ctx:ph,ctxCls:'sent',opts,
+    why:`<p>${type==='syn'?'Same meaning':'Opposite'}: “${bold}” and <b>${w.k}</b>.</p>`+wordCard(w),w:w.k};
+}
+function qLit(it){
+  const opts=shuffle(it.o.map(t=>({t,ok:t===it.a,note:(it.note&&it.note[t])||'Look back at the excerpt, and think about what the boldface word means.'})));
+  const w=BYK[it.w];
+  return {kind:'mc',prompt:it.q,ctx:it.ex,ctxCls:'text',opts,why:wordCard(w),w:w.k};
+}
+function qSpell(w){
+  return {kind:'type',prompt:'Spell the word that matches this meaning.',ctx:`<b>${w.short}</b><br><span class="sa">${w.pos} ${w.pr}</span>`,
+    accept:[w.k],stem:w.stem,ans:w.k,spell:true,why:wordCard(w),w:w.k};
+}
+
+/* ---------- drill engine: stay on a question until it is right; first-try score; misses come back once ---------- */
+function run(box,title,qs,back){
+  const S={queue:qs.map((_,i)=>i),n:0,first:0,missedIdx:new Set(),requeued:new Set()};
+  box.innerHTML='';
+  const top=el('div','top'),bk=el('button','btn ghost','← Back');bk.type='button';bk.onclick=back;
+  const tl=el('b','',title),cnt=el('span','cnt');top.append(bk,tl,cnt);
+  const bar=el('div','bar','<i></i>');const stage=el('div','stack');
+  box.append(top,bar,stage);
+  function head(){cnt.textContent=`${Math.min(S.n+1,qs.length)} of ${qs.length}`+(S.requeued.size?` · retry round`:'');
+    bar.firstChild.style.width=(S.n/Math.max(S.queue.length,1)*100)+'%'}
+  function next(){
+    if(S.n>=S.queue.length)return finish();
+    head();const qi=S.queue[S.n],q=qs[qi];let tries=0;
+    stage.innerHTML='';
+    const card=el('div','q');
+    card.append(el('p','prompt',q.prompt));
+    if(q.ctx)card.append(el('p','ctx '+(q.ctxCls||''),q.ctx));
+    if(q.bank){const b=el('div','bank');WORDS.map(w=>w.k).forEach(k=>b.append(el('span','',k)));b.setAttribute('aria-label','Word bank');card.append(b)}
+    const fb=el('div','fb');fb.setAttribute('aria-live','polite');
+    const nx=el('button','btn','Next →');nx.type='button';nx.hidden=true;
+    function right(first){
+      card.classList.add('ok');
+      if(first){if(!S.requeued.has(qi))S.first++}
+      else S.missedIdx.add(qi);
+      fb.className='fb good';fb.textContent=first?'Correct!':'Right — got it.';
+      const why=el('div','why',q.why);
+      nx.hidden=false;card.append(why,nx);
+      if(S.n+1>=S.queue.length)nx.textContent='See results';
+      nx.focus();
+    }
+    nx.onclick=()=>{
+      if(S.missedIdx.has(qi)&&!S.requeued.has(qi)){S.requeued.add(qi);S.queue.push(qi)}
+      S.n++;next();
+    };
+    if(q.kind==='mc'){
+      const wrap=el('div','opts'+(q.two?' two':''));
+      q.opts.forEach(o=>{
+        const b=el('button','opt',o.t);b.type='button';
+        b.onclick=()=>{
+          if(o.ok){wrap.querySelectorAll('.opt').forEach(x=>x.disabled=true);b.classList.add('right');right(tries===0)}
+          else{tries++;b.disabled=true;b.classList.add('wrong');fb.className='fb bad';fb.innerHTML='Not quite. '+(o.note||'')+' Try again.'}
+        };
+        wrap.append(b);
+      });
+      card.append(wrap,fb);
+    }else{
+      const f=el('div','typed');const inp=el('input');inp.type='text';inp.autocomplete='off';inp.autocapitalize='none';inp.spellcheck=false;
+      inp.setAttribute('aria-label','Your answer');
+      const ck=el('button','btn','Check');ck.type='button';
+      const go=()=>{
+        const v=inp.value.trim().toLowerCase();if(!v)return;
+        if(q.accept.includes(v)){inp.className='ok';inp.disabled=true;ck.disabled=true;
+          right(tries===0)}
+        else{
+          tries++;inp.className='no';
+          let m;
+          if(!q.spell&&v.startsWith(q.stem.slice(0,Math.max(4,q.stem.length-2)))){m='That’s the right word, but the ending doesn’t fit the sentence. Check the word form.'}
+          else if(q.spell&&v.length>2&&q.ans.startsWith(v.slice(0,3))){m='Close — check your spelling.'}
+          else m='Not quite.';
+          if(tries>=2)m+=` Hint: it starts with “${q.ans[0]}” and has ${q.ans.length} letters.`;
+          fb.className='fb bad';fb.textContent=m+' Try again.';inp.select();
+        }
+      };
+      ck.onclick=go;inp.onkeydown=e=>{if(e.key==='Enter')go()};
+      f.append(inp,ck);card.append(f,fb);
+    }
+    stage.append(card);
+    const first=card.querySelector('input,.opt');if(first&&first.tagName==='INPUT')first.focus();
+    card.scrollIntoView({block:'nearest'});
+  }
+  function finish(){
+    bar.firstChild.style.width='100%';cnt.textContent='Done';
+    stage.innerHTML='';
+    const miss=[...S.missedIdx];
+    const d=el('div','panel fin');
+    d.append(el('h2','',miss.length?'Nice work — keep going':'Perfect round!'));
+    d.append(el('div','bigscore',`${S.first} / ${qs.length}`));
+    d.append(el('p','',miss.length?'right on the first try. These are the ones to look at again:':'right on the first try. Every single one.'));
+    if(miss.length){
+      const m=el('div','miss');
+      [...new Set(miss.map(i=>qs[i].w))].forEach(k=>m.append(el('div','',`<b>${k}</b> — ${BYK[k].short}`)));
+      d.append(m);
+      const again=el('button','btn','Practice the ones I missed');again.type='button';
+      again.onclick=()=>run(box,title+' (missed)',shuffle(miss.map(i=>rebuild(qs[i]))),back);
+      d.append(again);
+    }
+    const bb=el('button','btn ghost','Back');bb.type='button';bb.onclick=back;d.append(bb);
+    stage.append(d);
+  }
+  next();
+}
+/* rebuild fresh options for missed MC questions so the order changes */
+function rebuild(q){return Object.assign({},q,q.opts?{opts:shuffle(q.opts)}:{})}
+
+/* ---------- flashcards ---------- */
+function flash(box,back){
+  WORDS.forEach(w=>{w._again=false});
+  let deck=shuffle(WORDS.map(w=>w.k)),i=0,known=0;
+  box.innerHTML='';
+  const top=el('div','top'),bk=el('button','btn ghost','← Back');bk.type='button';bk.onclick=back;
+  const cnt=el('span','cnt');top.append(bk,el('b','','Flashcards'),cnt);
+  const stage=el('div','stack');box.append(top,stage);
+  function show(){
+    if(i>=deck.length){
+      stage.innerHTML='';const d=el('div','panel fin');
+      d.append(el('h2','','Deck finished'),el('p','',`You marked ${known} of ${WORDS.length} as “Got it” on the first look.`));
+      const r=el('button','btn','Shuffle and go again');r.type='button';r.onclick=()=>flash(box,back);
+      const b2=el('button','btn ghost','Back');b2.type='button';b2.onclick=back;d.append(r,b2);stage.append(d);cnt.textContent='';return;
+    }
+    cnt.textContent=`${i+1} of ${deck.length}`;
+    const w=BYK[deck[i]];stage.innerHTML='';
+    const c=el('div','panel fc');c.tabIndex=0;c.setAttribute('role','button');
+    c.innerHTML=`<p class="big">${w.k}</p><p class="pos">${w.pos} ${w.pr}</p><p class="hint">What does it mean? Tap the card to check.</p>`;
+    const act=el('div','row');act.hidden=true;
+    const ok=el('button','btn','Got it'),no=el('button','btn ghost','Not yet');ok.type=no.type='button';
+    act.append(ok,no);
+    let shown=false;
+    const reveal=()=>{if(shown)return;shown=true;
+      c.innerHTML=`<p class="big">${w.k}</p><p class="pos">${w.pos} ${w.pr}</p><p>${w.def}</p><p class="ctx">${filled(w.ex[0][0],w.ex[0][1])}</p>`;
+      act.hidden=false;ok.focus()};
+    c.onclick=reveal;c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();reveal()}};
+    ok.onclick=()=>{known+=(w._again?0:1);i++;show()};
+    no.onclick=()=>{deck.push(deck[i]);w._again=true;i++;show()};
+    stage.append(c,act);c.focus();
+  }
+  show();
+}
+
+/* ---------- Learn tab ---------- */
+function buildLearn(){
+  const v=$('#vLearn');
+  v.append(el('div','panel','<p class="label">How to use this</p><p style="margin:0">Tap a word to open it. Read the meaning and the sentence, then try the <b>Practice</b> tab. The sentences come from the Definitions pages (62–64) of your book.</p>'));
+  const l=el('div','wl');
+  WORDS.forEach((w,i)=>{
+    const d=el('details','wd');
+    const s=el('summary','',`<span class="wn">${w.k}</span><span class="wp">${w.pos}</span><span class="ws">${w.short}</span>`);
+    const b=el('div','wb');
+    b.innerHTML=wordCard(w)+'<div class="exs">'+w.ex.map(e=>`<p>${filled(e[0],e[1])}</p>`).join('')+'</div>'+
+      (w.syn?`<p class="sa"><b>Synonyms:</b> ${w.syn}</p>`:'')+(w.ant?`<p class="sa"><b>Antonyms:</b> ${w.ant}</p>`:'');
+    d.append(s,b);l.append(d);
+  });
+  v.append(l);
+}
+
+/* ---------- Practice tab ---------- */
+const DRILLS=[
+ {id:'flash',t:'Flashcards',d:'See the word, say the meaning, tap to check.'},
+ {id:'meaning',t:'Word → meaning',d:'Pick the right definition for each word (20 questions).',mk:()=>shuffle(WORDS).map(qMeaning)},
+ {id:'word',t:'Meaning → word',d:'Pick the word that matches the meaning (20 questions).',mk:()=>shuffle(WORDS).map(qWord)},
+ {id:'choose',t:'Choosing the right word',d:'Two words, one sentence. Page 65–66, 25 questions.',mk:()=>shuffle(CHOOSE).map(qChoose)},
+ {id:'complete',t:'Completing the sentence',d:'Type the word, in the right form. Pages 67–68, 20 questions.',mk:()=>shuffle(COMPLETE).map(qComplete)},
+ {id:'synant',t:'Synonyms and antonyms',d:'Same meaning or opposite. Pages 66–67, 15 questions.',mk:()=>shuffle(SYNANT).map(qSyn)},
+ {id:'lit',t:'Vocabulary in context',d:'Excerpts from A Christmas Carol. Page 69, 5 questions.',mk:()=>shuffle(LIT).map(qLit)},
+ {id:'spell',t:'Spelling',d:'Read the meaning, type the word (20 questions).',mk:()=>shuffle(WORDS).map(qSpell)}
+];
+function menu(){
+  const v=$('#vPractice');v.innerHTML='';
+  v.append(el('div','panel','<p class="label">Pick a drill</p><p style="margin:0">A question stays open until you get it right. Anything you miss comes back at the end.</p>'));
+  const m=el('div','menu');
+  DRILLS.forEach(d=>{
+    const b=el('button','mb',`<b>${d.t}</b><span>${d.d}</span>`);b.type='button';
+    b.onclick=()=>{d.id==='flash'?flash(v,menu):run(v,d.t,d.mk(),menu);window.scrollTo(0,0)};
+    m.append(b);
+  });
+  v.append(m);
+}
+
+/* ---------- Test tab ---------- */
+function testMenu(){
+  const v=$('#vTest');v.innerHTML='';
+  const p=el('div','panel qintro stack');
+  p.innerHTML='<p class="label">Mixed test</p><p style="margin:0">20 questions picked at random from every drill: meanings, word choice, synonyms and antonyms, a few typed sentences, and one reading question. A new mix every time.</p>';
+  const b=el('button','btn','Start the test');b.type='button';
+  b.onclick=()=>{
+    const qs=shuffle([
+      ...pick(WORDS,3).map(qMeaning),...pick(WORDS,3).map(qWord),
+      ...pick(CHOOSE,5).map(qChoose),...pick(COMPLETE,4).map(qComplete),
+      ...pick(SYNANT,4).map(qSyn),...pick(LIT,1).map(qLit)]);
+    run(v,'Mixed test',qs,testMenu);window.scrollTo(0,0);
+  };
+  p.append(b);v.append(p);
+}
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x===t));
+  $('#vLearn').hidden=t.dataset.t!=='learn';$('#vPractice').hidden=t.dataset.t!=='practice';$('#vTest').hidden=t.dataset.t!=='test';
+});
+buildLearn();menu();testMenu();
+</script>
+</body></html>
