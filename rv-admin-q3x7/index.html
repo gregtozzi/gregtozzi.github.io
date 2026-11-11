@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Review Log · Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Figtree:wght@400;600;700&family=Caveat:wght@600&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#F5F8FE;--grid:#DCE6F7;--ink:#17204D;--ink2:#4B5683;--card:#fff;--rule:#DDE5F4;--red:#D4343F;--blue:#2F5BEA;--good:#16995F;--bad:#C62F3A;--hl:#FFEE9E;--warn:#B7791F}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#0E1330;--grid:#18204A;--ink:#EAF0FF;--ink2:#A9B4E0;--card:#161D44;--rule:#26305F;--red:#FF6B73;--blue:#8CA6FF;--good:#4FD08F;--bad:#FF7B84;--hl:#5a4d10;--warn:#F0B95B}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper) repeating-linear-gradient(to bottom,transparent 0 31px,var(--grid) 31px 32px);color:var(--ink);font:16px/1.5 Figtree,system-ui,sans-serif}
+header{position:sticky;top:0;background:var(--paper);border-bottom:2px solid var(--red);padding:12px 16px;z-index:5;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+header b{font:800 20px 'Bricolage Grotesque',system-ui,sans-serif}header span{color:var(--ink2);font-size:13px;letter-spacing:.04em;text-transform:uppercase}
+main{max-width:980px;margin:0 auto;padding:20px 16px 80px}
+h1,h2{font-family:'Bricolage Grotesque',system-ui,sans-serif;margin:0 0 8px}h2{font-size:22px;margin-top:28px}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:16px;margin:12px 0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+input,select,textarea{font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--rule);border-radius:10px;background:var(--paper);color:var(--ink);min-height:44px}
+input{flex:1;min-width:220px}
+button{font:600 15px Figtree,system-ui,sans-serif;min-height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--ink);background:var(--paper);color:var(--ink);cursor:pointer}
+button.pri{background:var(--ink);color:var(--paper)}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.tile{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:12px}.tile b{display:block;font:800 26px 'Bricolage Grotesque',system-ui,sans-serif}.tile small{color:var(--ink2)}
+.flag{display:flex;gap:10px;padding:10px 12px;border-left:5px solid var(--warn);background:var(--card);border-radius:8px;margin:8px 0;border-top:1px solid var(--rule);border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.flag.hi{border-left-color:var(--bad)}.flag.ok{border-left-color:var(--good)}.flag.info{border-left-color:var(--blue)}.flag b{display:block}.flag span{color:var(--ink2);font-size:14px}
+table{width:100%;border-collapse:collapse;font-size:14px}th{text-align:left;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink2);padding:6px 8px}td{padding:8px;border-top:1px solid var(--rule);vertical-align:top}
+.meter{height:10px;background:var(--rule);border-radius:6px;overflow:hidden;min-width:90px}.meter i{display:block;height:100%;background:var(--good)}.meter.lo i{background:var(--bad)}.meter.mid i{background:var(--warn)}
+.fr{font-family:Caveat,cursive;font-size:19px}.mut{color:var(--ink2);font-size:14px}.bars{display:flex;align-items:flex-end;gap:4px;height:90px}.bars div{flex:1;background:var(--blue);border-radius:3px 3px 0 0;min-height:2px;position:relative}.bars div:hover::after{content:attr(data-t);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);font-size:11px;padding:2px 6px;border-radius:4px;white-space:nowrap}
+.lab{display:flex;gap:4px;font-size:10px;color:var(--ink2)}.lab span{flex:1;text-align:center}
+.tag{display:inline-block;padding:1px 8px;border-radius:99px;background:var(--hl);color:#17204D;font-size:12px;font-weight:700}
+details summary{cursor:pointer;font-weight:700;min-height:32px}
+[hidden]{display:none!important}
+.scroll{overflow-x:auto}
+</style></head><body>
+<header><b>Review log</b><span>Admin · private</span></header>
+<main>
+<div class="card" id="conn">
+ <h1 style="font-size:24px">Connect</h1>
+ <p class="mut" style="margin:0 0 10px">Paste the web app URL and your admin key. They are kept only in this browser if you tick the box. Nothing is shown without the key.</p>
+ <div class="row"><input id="ep" placeholder="Web app URL (https://script.google.com/macros/s/…/exec)" autocomplete="off"><input id="key" type="password" placeholder="Admin key" autocomplete="off"></div>
+ <div class="row" style="margin-top:10px"><label class="mut"><input type="checkbox" id="rem" style="min-width:0;min-height:0;flex:none;margin-right:6px">Remember on this device</label>
+ <button class="pri" id="go">Load logs</button><button id="demo">Try sample data</button><button id="file">Load JSON file…</button><input type="file" id="fi" accept=".json,.txt" hidden></div>
+ <details style="margin-top:10px"><summary>Or paste exported JSON</summary><textarea id="paste" rows="4" style="width:100%;margin-top:8px" placeholder='Paste the JSON she copies from the #export page'></textarea><button id="pgo" style="margin-top:8px">Use pasted JSON</button></details>
+ <p id="msg" class="mut" role="status"></p>
+</div>
+<div id="out" hidden></div>
+</main>
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const TNC={
+ ch4:{etav:'Être & avoir (Thursday quiz)',vocab:'Vocabulaire',avoir:'Avoir & il y a',poss:'Adjectifs possessifs',adj:'Beau, nouveau, vieux',read:'Lecture & conversation',culture:'Culture & logement',phrases:'Construire des phrases'},
+ mf:{'mf-speed':'Steps: speed','mf-distance':'Steps: distance','mf-time':'Steps: time','mf-accel':'Steps: acceleration','mf-forceA':'Steps: force → acceleration','mf-forceF':'Steps: force','mf-momentum':'Steps: momentum','mf-concept':'Concept questions','mf-name2f':'Name → formula','mf-f2name':'Formula → name','mf-build':'Build the formula','mf-blank':'Fill the formula blank','mf-symbol':'What a symbol means','mf-units':'Units','mf-q2u':'Quantity → unit','mf-u2q':'Unit → quantity','mf-word':'Word problems'},
+ la5:{'la-meaning':'Word → meaning','la-word':'Meaning → word','la-choose':'Choosing the right word','la-complete':'Completing the sentence','la-synant':'Synonyms & antonyms','la-lit':'Vocabulary in context','la-spell':'Spelling','la-flash':'Flashcards'}};
+const TN=Object.assign({},...Object.values(TNC));
+const CHN={ch4:'French I · Chapitre 4',mf:'Motion and Forces',la5:'Unit 5 Vocabulary'};
+const COLS=['t','s','d','c','tp','qt','m','q','a','r','ok','ms','v'];
+const store={get(k){try{return localStorage.getItem(k)||''}catch(e){return ''}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+let RAW=[],CH=null,RAWseen=null;
+const norm=s=>String(s||'').toLowerCase().replace(/[’‘`´]/g,"'").normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/-/g,' ').replace(/[^a-z0-9' ]/g,' ').replace(/\s+/g,' ').trim();
+function lev(a,b){if(a===b)return 0;const m=a.length,n=b.length;if(!m)return n;if(!n)return m;let p=[...Array(n+1).keys()];for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return p[n]}
+const pct=(a,b)=>b?Math.round(100*a/b):0;
+const med=a=>{if(!a.length)return 0;a=[...a].sort((x,y)=>x-y);return a[a.length>>1]};
+const ago=t=>{const d=(Date.now()-t)/6e4;if(d<2)return 'just now';if(d<90)return Math.round(d)+' min ago';if(d<2160)return Math.round(d/60)+' h ago';return Math.round(d/1440)+' days ago'};
+const dkey=t=>{const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+function cls(p){return p<60?'lo':p<80?'mid':''}
+function meter(p){return `<div class="meter ${cls(p)}" role="img" aria-label="${p}%"><i style="width:${p}%"></i></div>`}
+
+function toObjs(j){ // accepts {rows,cols}, array of arrays, or array of objects
+  let rows=j&&j.rows?j.rows:j,cols=j&&j.cols?j.cols:COLS;
+  if(!Array.isArray(rows))throw new Error('Unrecognised data');
+  return rows.map(r=>Array.isArray(r)?Object.fromEntries(cols.map((c,i)=>[c,r[i]])):r).filter(o=>o&&o.t).map(o=>({t:+o.t,s:o.s||'',d:o.d||'',c:o.c||'',tp:o.tp||'',qt:o.qt||'',m:o.m||'',q:String(o.q||''),a:String(o.a||''),r:String(o.r||''),ok:+o.ok?1:0,ms:+o.ms||0,v:o.v||''}));
+}
+function setMsg(t,bad){const m=$('#msg');m.textContent=t;m.style.color=bad?'var(--bad)':'var(--ink2)'}
+async function load(){
+  const ep=$('#ep').value.trim(),key=$('#key').value.trim();
+  if(!/^https:\/\/script\.google\.com\//.test(ep)||!key){setMsg('Enter the web app URL (starts with https://script.google.com/) and the admin key.',1);return}
+  if($('#rem').checked){store.set('adm-ep',ep);store.set('adm-key',key)}else{store.del('adm-ep');store.del('adm-key')}
+  setMsg('Loading…');
+  try{
+    const r=await fetch(ep+'?key='+encodeURIComponent(key),{redirect:'follow'});const j=await r.json();
+    if(!j.ok){setMsg('The server said no. Check the admin key.',1);return}
+    RAW=toObjs(j);setMsg(RAW.length+' events loaded.');render();
+  }catch(e){setMsg('Could not reach the web app. Check the URL and that it is deployed with access “Anyone”.',1)}
+}
+function sample(){
+  const topics=[['vocab',.78],['avoir',.55],['poss',.7],['adj',.42],['read',.85],['culture',.6],['phrases',.5]];
+  const qs={vocab:['la grand-mère → grandmother','le cousin → cousin (m.)','la salle à manger → dining room','le jardin → garden'],avoir:['Tu ___ quel âge ?','Nous ___ faim.','Il y a / Ils ont ?','Elle n’___ pas de frère.'],poss:['my sister → ma sœur','his/her father → son père','their friends → leurs amis','our house → notre maison'],adj:['un ___ appartement (beau)','un ___ ami (nouveau)','une ___ maison (vieux)','des ___ arbres (beau)'],read:['Where does Vincent live?','Who is Charlotte?','How many rooms does it have?'],culture:['Louvre arrondissement?','Where is rue Jacob?','What is an HLM?'],phrases:['Build: He has a big house','Build: My friends are nice']};
+  const out=[];const now=Date.now();let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+  for(let d=5;d>=0;d--){if(d===3)continue;const s='S'+d;let t=now-d*864e5-rnd()*3e6;
+    for(let i=0;i<70;i++){const [tp,p]=topics[Math.floor(rnd()*topics.length)];const pool=qs[tp];const q=pool[Math.floor(rnd()*pool.length)];const bump=(5-d)*.02;const ok=rnd()<p+bump?1:0;
+      const typed=tp==='vocab'||tp==='poss'||tp==='adj'||tp==='avoir';const ans=q.includes('→')?q.split('→')[1].trim():'answer';
+      let r=ok?ans:(rnd()<.35?ans.replace(/[éèêë]/g,'e').replace('œ','oe'):rnd()<.15?'':rnd()<.4?ans.slice(0,-1)+'s':'autre');
+      if(!ok&&typed&&norm(r)===norm(ans)){}
+      out.push({t:Math.round(t+=4000+rnd()*20000),s,d:'DEV1',c:'ch4',tp,qt:typed?'type':'mc',m:'practice',q,a:ans,r,ok:ok,ms:Math.round(4000+rnd()*14000*(tp==='adj'?1.8:1)),v:''})}
+    if(d<=1){for(let i=0;i<49;i++){const [tp,p]=topics[i%7];out.push({t:Math.round(t+=9000),s:s+'T',d:'DEV1',c:'ch4',tp,qt:'mc',m:'test',q:'Test '+tp+' '+i,a:'x',r:'x',ok:rnd()<p?1:0,ms:9000,v:''})}}}
+  out.push({t:now-60000,s:'S0',d:'DEV1',c:'ch4',tp:'poss',qt:'type',m:'override',q:'their friends → leurs amis',a:'leurs amis',r:'ses amis',ok:1,ms:0,v:''});
+  return out.sort((a,b)=>a.t-b.t);
+}
+function render(){
+  const chs=[...new Set(RAW.map(e=>e.c))].filter(Boolean);if(RAWseen!==RAW){RAWseen=RAW;CH=null}
+  if(CH===null){const lastE=RAW.length?RAW.reduce((a,b)=>b.t>a.t?b:a):null;CH=lastE&&chs.length>1?lastE.c:''}const cur=CH;
+  const D=RAW.filter(e=>!cur||e.c===cur);
+  const G=D.filter(e=>e.qt!=='flash'&&e.m!=='override');
+  const F=D.filter(e=>e.qt==='flash');const O=D.filter(e=>e.m==='override');
+  const out=$('#out');out.hidden=false;
+  if(!D.length){out.innerHTML='<div class="card">No attempts yet.</div>';return}
+  const ok=G.filter(e=>e.ok).length,sess=new Set(D.map(e=>e.s)).size,days=new Set(D.map(e=>dkey(e.t))).size,last=Math.max(...D.map(e=>e.t));
+  const msAll=G.map(e=>e.ms).filter(x=>x>0),mAll=med(msAll);
+  const topics=[...new Set([...(cur?Object.keys(TNC[cur]||{}):[]),...G.map(e=>e.tp)])].filter(k=>cur?(TNC[cur]?k in TNC[cur]||G.some(e=>e.tp===k):true):true).filter(k=>k!=='la-flash');
+  const T={};topics.forEach(tp=>{const g=G.filter(e=>e.tp===tp);const cut=Date.now()-3*864e5;const rec=g.filter(e=>e.t>=cut),old=g.filter(e=>e.t<cut);T[tp]={n:g.length,ok:g.filter(e=>e.ok).length,ms:med(g.map(e=>e.ms).filter(x=>x>0)),rn:rec.length,rp:pct(rec.filter(e=>e.ok).length,rec.length),on:old.length,op:pct(old.filter(e=>e.ok).length,old.length)}});
+  // questions
+  const Q={};G.forEach(e=>{const k=e.tp+'|'+e.q;const o=Q[k]||(Q[k]={tp:e.tp,q:e.q,a:e.a,n:0,ok:0,w:{},last:0,lastOk:1,streak:0,ms:[]});o.n++;o.ok+=e.ok;o.last=Math.max(o.last,e.t);o.ms.push(e.ms);if(!e.ok){const r=e.r||'(blank)';o.w[r]=(o.w[r]||0)+1}});
+  Object.values(Q).forEach(o=>{const seq=G.filter(e=>e.tp===o.tp&&e.q===o.q).sort((a,b)=>a.t-b.t);let s=0;for(let i=seq.length-1;i>=0&&!seq[i].ok;i--)s++;o.streak=s});
+  const ov={};O.forEach(e=>{ov[e.q]=(ov[e.q]||0)+1});
+  const hard=Object.values(Q).filter(o=>o.n>=2&&o.ok<o.n).sort((a,b)=>(a.ok/a.n)-(b.ok/b.n)||b.n-a.n).slice(0,25);
+  // error patterns (typed misses)
+  const miss=G.filter(e=>!e.ok);const typedMiss=miss.filter(e=>e.qt==='type');
+  const P={blank:0,accent:0,close:0,other:0};
+  typedMiss.forEach(e=>{if(!e.r.trim())P.blank++;else if(norm(e.r)===norm(e.a)||norm(e.r).replace(/ /g,'')===norm(e.a).replace(/ /g,''))P.accent++;else if(lev(norm(e.r),norm(e.a))<=2)P.close++;else P.other++});
+  // flags
+  const F1=[];
+  Object.entries(T).filter(([,t])=>t.n>=8&&pct(t.ok,t.n)<70).sort((a,b)=>pct(a[1].ok,a[1].n)-pct(b[1].ok,b[1].n)).forEach(([k,t])=>F1.push({lv:pct(t.ok,t.n)<55?'hi':'',h:`${TN[k]||k}: ${pct(t.ok,t.n)}% correct`,s:`${t.ok} of ${t.n} answers right.`+(t.rn>=5&&t.on>=5?` Last 3 days ${t.rp}% vs ${t.op}% before.`:'')}));
+  Object.values(Q).filter(o=>o.streak>=3).sort((a,b)=>b.streak-a.streak).slice(0,5).forEach(o=>F1.push({lv:'hi',h:`Stuck on: ${o.q}`,s:`Wrong ${o.streak} times in a row. Answer: ${o.a}`}));
+  Object.entries(T).filter(([,t])=>t.n>=8&&mAll&&t.ms>mAll*1.5).forEach(([k,t])=>F1.push({lv:'info',h:`${TN[k]||k}: slow`,s:`Median ${(t.ms/1000).toFixed(1)}s per question vs ${(mAll/1000).toFixed(1)}s overall. She may be unsure even when right.`}));
+  if(typedMiss.length>=8&&P.accent/typedMiss.length>=.25)F1.push({lv:'',h:'Accent slips',s:`${P.accent} of ${typedMiss.length} typed misses were only missing an accent (or spacing). Cheap marks to win back.`});
+  if(typedMiss.length>=8&&P.blank/typedMiss.length>=.2)F1.push({lv:'',h:'Blank answers',s:`${P.blank} typed answers were left empty, which usually means “don’t know”.`});
+  Object.entries(ov).filter(([,n])=>n>=2).forEach(([q,n])=>F1.push({lv:'info',h:`Possible app gap: ${q}`,s:`She marked “I was actually right” ${n} times. The app may be missing a valid answer.`}));
+  (cur?topics:[]).filter(k=>!T[k]||T[k].n===0).forEach(k=>F1.push({lv:'info',h:`Not tried yet: ${TN[k]}`,s:'No graded answers in this area.'}));
+  // tests
+  const TS={};D.filter(e=>e.m==='test').forEach(e=>{const o=TS[e.s]||(TS[e.s]={t:e.t,n:0,ok:0,by:{}});o.n++;o.ok+=e.ok;o.t=Math.max(o.t,e.t);const b=o.by[e.tp]||(o.by[e.tp]=[0,0]);b[1]++;b[0]+=e.ok});
+  const tests=Object.values(TS).sort((a,b)=>b.t-a.t).slice(0,8);
+  if(tests.length){const l=tests[0];F1.push({lv:pct(l.ok,l.n)>=80?'ok':'info',h:`Latest mock test: ${l.ok}/${l.n} (${pct(l.ok,l.n)}%)`,s:ago(l.t)+(tests.length>1?'. Previous: '+tests.slice(1,4).map(x=>pct(x.ok,x.n)+'%').join(', '):'')})}
+  if(!F1.some(f=>f.lv==='hi'||f.lv===''))F1.unshift({lv:'ok',h:'Nothing alarming yet',s:'No area is clearly weak with the data so far.'});
+  // activity
+  const dayN={};D.forEach(e=>{const k=dkey(e.t);dayN[k]=(dayN[k]||0)+1});const dl=[];for(let i=13;i>=0;i--){const d=new Date(Date.now()-i*864e5);dl.push([dkey(d),d.getDate()])}
+  const mx=Math.max(1,...dl.map(([k])=>dayN[k]||0));
+  const hr=Array(24).fill(0);D.forEach(e=>hr[new Date(e.t).getHours()]++);const hm=Math.max(1,...hr);
+  const fl={};F.forEach(e=>{const k=e.q;const o=fl[k]||(fl[k]={q:k,a:e.a,again:0,got:0});e.ok?o.got++:o.again++});
+  const flHard=Object.values(fl).filter(o=>o.again>=2).sort((a,b)=>b.again-a.again).slice(0,12);
+
+  out.innerHTML=`
+  <div class="row" style="justify-content:space-between"><h1 style="font-size:26px;margin:16px 0 0">Overview${cur?` · ${esc(CHN[cur]||cur)}`:''}</h1>
+  <div class="row">${chs.length>1?`<select id="chsel" aria-label="Which review"><option value="">All reviews</option>${chs.map(c=>`<option value="${esc(c)}" ${c===cur?'selected':''}>${esc(CHN[c]||c)}</option>`).join('')}</select>`:''}<button id="csv">Download CSV</button></div></div>
+  <div class="tiles" style="margin-top:10px">
+   <div class="tile"><b>${G.length}</b><small>graded answers</small></div>
+   <div class="tile"><b>${pct(ok,G.length)}%</b><small>correct overall</small></div>
+   <div class="tile"><b>${sess}</b><small>sessions on ${days} day${days>1?'s':''}</small></div>
+   <div class="tile"><b>${(mAll/1000).toFixed(1)}s</b><small>median time per answer</small></div>
+   <div class="tile"><b style="font-size:20px;padding-top:6px">${esc(ago(last))}</b><small>last active</small></div>
+  </div>
+  <h2>Where she needs help</h2>${F1.map(f=>`<div class="flag ${f.lv}"><div><b>${esc(f.h)}</b><span>${esc(f.s)}</span></div></div>`).join('')}
+  <h2>Accuracy by topic</h2><div class="card scroll"><table><tr><th>Topic</th><th>Right</th><th style="width:30%">Accuracy</th><th>Median time</th><th>Trend (3 days vs before)</th></tr>
+  ${topics.map(k=>{const t=T[k];const p=pct(t.ok,t.n);const tr=t.rn>=5&&t.on>=5?(t.rp-t.op>=8?'▲ '+(t.rp-t.op)+' pts':t.rp-t.op<=-8?'▼ '+(t.op-t.rp)+' pts':'steady'):'–';return `<tr><td>${esc(TN[k]||k)}</td><td>${t.ok}/${t.n}</td><td>${t.n?meter(p)+'<span class="mut">'+p+'%</span>':'<span class="mut">not tried</span>'}</td><td>${t.ms?(t.ms/1000).toFixed(1)+'s':'–'}</td><td>${tr}</td></tr>`}).join('')}</table></div>
+  <h2>Hardest questions</h2><div class="card scroll">${hard.length?`<table><tr><th>Question</th><th>Tries</th><th>Right</th><th>Correct answer</th><th>Her usual wrong answers</th></tr>${hard.map(o=>`<tr><td>${esc(o.q)}<div class="mut">${esc(TN[o.tp]||o.tp)}</div></td><td>${o.n}</td><td>${pct(o.ok,o.n)}%</td><td class="fr">${esc(o.a)}</td><td>${Object.entries(o.w).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([r,n])=>`<span class="fr">${esc(r)}</span>${n>1?' ×'+n:''}`).join('<br>')}${ov[o.q]?`<div class="tag">disputed ×${ov[o.q]}</div>`:''}</td></tr>`).join('')}</table>`:'<span class="mut">No repeated misses yet.</span>'}</div>
+  <h2>What kind of mistakes</h2><div class="card"><div class="tiles">
+   <div class="tile"><b>${miss.length}</b><small>wrong answers total</small></div>
+   <div class="tile"><b>${typedMiss.length}</b><small>typed (of those)</small></div>
+   <div class="tile"><b>${P.accent}</b><small>accent / spacing only</small></div>
+   <div class="tile"><b>${P.close}</b><small>close (1–2 letters off)</small></div>
+   <div class="tile"><b>${P.blank}</b><small>left blank</small></div>
+   <div class="tile"><b>${P.other}</b><small>other typed errors</small></div></div>
+   <p class="mut" style="margin-bottom:0">Accent and close misses are spelling. “Other” and blank mean the word or rule isn’t known yet.</p></div>
+  <h2>Mock tests</h2><div class="card scroll">${tests.length?`<table><tr><th>When</th><th>Score</th><th>Weakest areas</th></tr>${tests.map(x=>{const w=Object.entries(x.by).map(([k,[a,b]])=>[k,pct(a,b),b]).filter(r=>r[2]>=3).sort((a,b)=>a[1]-b[1]).slice(0,2);return `<tr><td>${esc(ago(x.t))}</td><td>${x.ok}/${x.n} (${pct(x.ok,x.n)}%)</td><td>${w.map(r=>esc(TN[r[0]]||r[0])+' '+r[1]+'%').join(', ')}</td></tr>`}).join('')}</table>`:'<span class="mut">No mock test finished yet.</span>'}</div>
+  <h2>Flashcards she keeps missing</h2><div class="card">${flHard.length?flHard.map(o=>`<div><span class="fr">${esc(o.q)}</span> <span class="mut">→ ${esc(o.a)} · “again” ×${o.again}</span></div>`).join(''):'<span class="mut">Nothing repeated yet.</span>'}</div>
+  <h2>When she studies</h2><div class="card"><div class="mut">Answers per day, last 14 days</div>
+   <div class="bars">${dl.map(([k,d])=>`<div style="height:${Math.round(100*(dayN[k]||0)/mx)}%" data-t="${k}: ${dayN[k]||0}"></div>`).join('')}</div><div class="lab">${dl.map(([k,d])=>`<span>${d}</span>`).join('')}</div>
+   <div class="mut" style="margin-top:14px">By hour of day</div><div class="bars">${hr.map((n,h)=>`<div style="height:${Math.round(100*n/hm)}%;background:var(--red)" data-t="${h}:00 · ${n}"></div>`).join('')}</div><div class="lab">${hr.map((n,h)=>`<span>${h%3?'':h}</span>`).join('')}</div></div>
+  <p class="mut">Devices seen: ${new Set(D.map(e=>e.d)).size}. Events are only recorded while she is online or when the page flushes; a few may arrive late.</p>`;
+  const cs=$('#chsel');if(cs)cs.onchange=()=>{CH=cs.value;render()};
+  $('#csv').onclick=()=>{const q=v=>'"'+String(v).replace(/"/g,'""').replace(/^([=+\-@])/,"'$1")+'"';const L=[COLS.join(',')].concat(D.map(e=>COLS.map(c=>c==='t'?new Date(e.t).toISOString():q(e[c])).join(',')));const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+L.join('\n')],{type:'text/csv;charset=utf-8'}));a.download='french-log.csv';a.click()};
+}
+$('#go').onclick=load;
+$('#demo').onclick=()=>{RAW=sample();setMsg('Showing made-up sample data, not real attempts.');render()};
+$('#file').onclick=()=>$('#fi').click();
+$('#fi').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{RAW=toObjs(JSON.parse(r.result));setMsg(RAW.length+' events loaded from file.');render()}catch(x){setMsg('That file was not valid log JSON.',1)}};r.readAsText(f)};
+$('#pgo').onclick=()=>{try{RAW=toObjs(JSON.parse($('#paste').value));setMsg(RAW.length+' events loaded.');render()}catch(x){setMsg('That was not valid log JSON.',1)}};
+$('#ep').value=store.get('adm-ep');$('#key').value=store.get('adm-key');$('#rem').checked=!!store.get('adm-key');
+$('#key').addEventListener('keydown',e=>{if(e.key==='Enter')load()});
+</script></body></html>

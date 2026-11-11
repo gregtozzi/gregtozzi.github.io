@@ -138,7 +138,37 @@ details.wd[open] summary::after{content:"–"}
   <div id="vTest" class="stack" hidden></div>
 </div>
 
+<script src="/rv-config.js"></script>
 <script>
+/* ---------- attempt log (so a parent can see what to practice). Sends nothing until /rv-config.js has an endpoint. ---------- */
+const RVL=(function(chapter){
+  const C=window.RVCFG||{};const K='rvlog-'+chapter;let S={q:[]};
+  const rid=()=>Math.random().toString(36).slice(2,10);
+  let did='';try{did=localStorage.getItem('rv-did')||'';if(!did){did=rid();localStorage.setItem('rv-did',did)}}catch(e){did='x'+rid()}
+  const sid=rid();
+  try{S=Object.assign(S,JSON.parse(localStorage.getItem(K)||'{}'))}catch(e){}
+  const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
+  const cut=(s,n)=>String(s==null?'':s).replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim().slice(0,n);
+  function flush(beacon){
+    if(!C.endpoint||!S.q.length)return;
+    const batch=S.q.splice(0,40);const body=JSON.stringify({token:C.token,events:batch});save();
+    try{if(beacon&&navigator.sendBeacon){navigator.sendBeacon(C.endpoint,new Blob([body],{type:'text/plain'}))}
+        else{fetch(C.endpoint,{method:'POST',mode:'no-cors',body}).catch(()=>{S.q=batch.concat(S.q);save()})}}catch(e){}
+  }
+  function log(e){
+    try{
+      if(!C.endpoint)return;
+      S.q.push({t:Date.now(),s:sid,d:did,c:chapter,tp:cut(e.tp,24),qt:cut(e.qt,10),m:cut(e.m,10),q:cut(e.q,140),a:cut(e.a,100),r:cut(e.r,100),ok:e.ok?1:0,ms:Math.max(0,Math.min(+e.ms||0,600000)),v:cut(e.v,20)});
+      if(S.q.length>500)S.q=S.q.slice(-500);
+      if(S.q.length>=6)flush();else save();
+    }catch(x){}
+  }
+  addEventListener('pagehide',()=>flush(true));
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flush(true)});
+  setInterval(()=>flush(),20000);
+  if(C.endpoint){const sh=()=>{const n=document.getElementById('rvnote');if(n)n.hidden=false};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sh);else sh()}
+  return {log};
+})('la5');
 /* ---------- Data: Vocabulary Workshop Level, Unit 5 (pages 62-69) ---------- */
 const WORDS=[
 {k:'addendum',stem:'addendum',pr:'(ə den′ dəm)',pos:'n.',def:'a thing that is added; an appendix or addition to a book or written document',short:'something added, like an appendix or extra note',
@@ -321,8 +351,11 @@ function qSpell(w){
     accept:[w.k],stem:w.stem,ans:w.k,spell:true,why:wordCard(w),w:w.k};
 }
 
+[['qMeaning','meaning'],['qWord','word'],['qChoose','choose'],['qComplete','complete'],['qSyn','synant'],['qLit','lit'],['qSpell','spell']].forEach(([n,d])=>{const f=eval(n);eval(n+'=function(x){return Object.assign(f(x),{d:"'+d+'"})}')});
 /* ---------- drill engine: stay on a question until it is right; first-try score; misses come back once ---------- */
 function run(box,title,qs,back){
+  const drillId=(DRILLS.find(d=>title.replace(/ \(missed\)$/,'')===d.t)||{id:/test/i.test(title)?'test':'other'}).id;
+  const rmode=/\(missed\)$/.test(title)?'redo':(drillId==='test'?'test':'practice');
   const S={queue:qs.map((_,i)=>i),n:0,first:0,missedIdx:new Set(),requeued:new Set()};
   box.innerHTML='';
   const top=el('div','top'),bk=el('button','btn ghost','← Back');bk.type='button';bk.onclick=back;
@@ -333,7 +366,8 @@ function run(box,title,qs,back){
     bar.firstChild.style.width=(S.n/Math.max(S.queue.length,1)*100)+'%'}
   function next(){
     if(S.n>=S.queue.length)return finish();
-    head();const qi=S.queue[S.n],q=qs[qi];let tries=0;
+    head();const qi=S.queue[S.n],q=qs[qi];let tries=0;const t0=Date.now();
+    const lg=(resp,ok)=>{if(tries!==0)return;RVL.log({tp:'la-'+(q.d||drillId),qt:q.kind,m:rmode,q:q.ctx||q.prompt,a:q.kind==='mc'?((q.opts.find(x=>x.ok)||{}).t):q.ans,r:resp,ok:ok,ms:Date.now()-t0,v:q.w})};
     stage.innerHTML='';
     const card=el('div','q');
     card.append(el('p','prompt',q.prompt));
@@ -360,8 +394,8 @@ function run(box,title,qs,back){
       q.opts.forEach(o=>{
         const b=el('button','opt',o.t);b.type='button';
         b.onclick=()=>{
-          if(o.ok){wrap.querySelectorAll('.opt').forEach(x=>x.disabled=true);b.classList.add('right');right(tries===0)}
-          else{tries++;b.disabled=true;b.classList.add('wrong');fb.className='fb bad';fb.innerHTML='Not quite. '+(o.note||'')+' Try again.'}
+          if(o.ok){lg(o.t,1);wrap.querySelectorAll('.opt').forEach(x=>x.disabled=true);b.classList.add('right');right(tries===0)}
+          else{lg(o.t,0);tries++;b.disabled=true;b.classList.add('wrong');fb.className='fb bad';fb.innerHTML='Not quite. '+(o.note||'')+' Try again.'}
         };
         wrap.append(b);
       });
@@ -372,10 +406,10 @@ function run(box,title,qs,back){
       const ck=el('button','btn','Check');ck.type='button';
       const go=()=>{
         const v=inp.value.trim().toLowerCase();if(!v)return;
-        if(q.accept.includes(v)){inp.className='ok';inp.disabled=true;ck.disabled=true;
+        if(q.accept.includes(v)){lg(v,1);inp.className='ok';inp.disabled=true;ck.disabled=true;
           right(tries===0)}
         else{
-          tries++;inp.className='no';
+          lg(v,0);tries++;inp.className='no';
           let m;
           if(!q.spell&&v.startsWith(q.stem.slice(0,Math.max(4,q.stem.length-2)))){m='That’s the right word, but the ending doesn’t fit the sentence. Check the word form.'}
           else if(q.spell&&v.length>2&&q.ans.startsWith(v.slice(0,3))){m='Close — check your spelling.'}
@@ -442,8 +476,8 @@ function flash(box,back){
       c.innerHTML=`<p class="big">${w.k}</p><p class="pos">${w.pos} ${w.pr}</p><p>${w.def}</p><p class="ctx">${filled(w.ex[0][0],w.ex[0][1])}</p>`;
       act.hidden=false;ok.focus()};
     c.onclick=reveal;c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();reveal()}};
-    ok.onclick=()=>{known+=(w._again?0:1);i++;show()};
-    no.onclick=()=>{deck.push(deck[i]);w._again=true;i++;show()};
+    ok.onclick=()=>{RVL.log({tp:'la-flash',qt:'flash',m:'flash',q:w.k,a:w.short,r:'got it',ok:1,ms:0,v:w.k});known+=(w._again?0:1);i++;show()};
+    no.onclick=()=>{RVL.log({tp:'la-flash',qt:'flash',m:'flash',q:w.k,a:w.short,r:'not yet',ok:0,ms:0,v:w.k});deck.push(deck[i]);w._again=true;i++;show()};
     stage.append(c,act);c.focus();
   }
   show();
@@ -511,4 +545,5 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
 });
 buildLearn();menu();testMenu();
 </script>
+<p id="rvnote" style="max-width:640px;margin:8px auto 28px;padding:0 16px;color:#55657F;font-size:14px" hidden>Your answers are saved so your parent can see what to practice.</p>
 </body></html>

@@ -184,8 +184,38 @@ code,.mono{font-family:var(--mono);font-weight:500;font-size:.92em}
   </div>
 </div>
 
+<script src="/rv-config.js"></script>
 <script>
 (function(){
+/* ---------- attempt log (so a parent can see what to practice). Sends nothing until /rv-config.js has an endpoint. ---------- */
+const RVL=(function(chapter){
+  const C=window.RVCFG||{};const K='rvlog-'+chapter;let S={q:[]};
+  const rid=()=>Math.random().toString(36).slice(2,10);
+  let did='';try{did=localStorage.getItem('rv-did')||'';if(!did){did=rid();localStorage.setItem('rv-did',did)}}catch(e){did='x'+rid()}
+  const sid=rid();
+  try{S=Object.assign(S,JSON.parse(localStorage.getItem(K)||'{}'))}catch(e){}
+  const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
+  const cut=(s,n)=>String(s==null?'':s).replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim().slice(0,n);
+  function flush(beacon){
+    if(!C.endpoint||!S.q.length)return;
+    const batch=S.q.splice(0,40);const body=JSON.stringify({token:C.token,events:batch});save();
+    try{if(beacon&&navigator.sendBeacon){navigator.sendBeacon(C.endpoint,new Blob([body],{type:'text/plain'}))}
+        else{fetch(C.endpoint,{method:'POST',mode:'no-cors',body}).catch(()=>{S.q=batch.concat(S.q);save()})}}catch(e){}
+  }
+  function log(e){
+    try{
+      if(!C.endpoint)return;
+      S.q.push({t:Date.now(),s:sid,d:did,c:chapter,tp:cut(e.tp,24),qt:cut(e.qt,10),m:cut(e.m,10),q:cut(e.q,140),a:cut(e.a,100),r:cut(e.r,100),ok:e.ok?1:0,ms:Math.max(0,Math.min(+e.ms||0,600000)),v:cut(e.v,20)});
+      if(S.q.length>500)S.q=S.q.slice(-500);
+      if(S.q.length>=6)flush();else save();
+    }catch(x){}
+  }
+  addEventListener('pagehide',()=>flush(true));
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flush(true)});
+  setInterval(()=>flush(),20000);
+  if(C.endpoint){const sh=()=>{const n=document.getElementById('rvnote');if(n)n.hidden=false};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sh);else sh()}
+  return {log};
+})('mf');
 const $=s=>document.querySelector(s);
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
 const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
@@ -375,8 +405,13 @@ function drawDots(){
   cur.steps.forEach((s,i)=>{const x=el('span','dot');
     if(results[i]) x.classList.add(results[i]==='first'?'first':'retry'); else if(i===idx&&!finished) x.classList.add('cur'); d.appendChild(x)});
 }
+function stepAns(s){try{
+  if(s.kind==='choice')return (s.options.find(o=>o.ok)||{}).t;
+  if(s.kind==='fill')return s.fields.map(f=>f.label+' = '+f.ans+' '+f.unit).join('; ');
+  if(s.kind==='num')return r4(s.ans)+(s.unit?' '+s.unit:'');
+  return 'mark the numbers';}catch(e){return ''}}
 function mount(i,scroll=true){
-  const s=cur.steps[i], card=el('section','step active'), st={tries:0,locked:false};
+  const s=cur.steps[i], card=el('section','step active'), st={tries:0,locked:false}, stT=Date.now();
   card.appendChild(Object.assign(el('div','shead'),{innerHTML:`<span class="badge">${i+1}</span><p class="prompt">${s.prompt}</p>`}));
   const body=el('div'); card.appendChild(body);
   const fb=el('div','fb'); fb.setAttribute('aria-live','polite'); card.appendChild(fb);
@@ -384,6 +419,7 @@ function mount(i,scroll=true){
   const actions=el('div','row'); card.appendChild(actions);
 
   function finish(assisted){
+    RVL.log({tp:'mf-'+(cur.genKey||'x'),qt:s.kind,m:curReview>=0?'review':'practice',q:s.prompt,a:stepAns(s),r:assisted?'(answer shown)':'tries '+st.tries,ok:(!assisted&&st.tries===0)?1:0,ms:Date.now()-stT,v:curReview>=0?'review'+(curReview+1):''});
     st.locked=true; card.classList.remove('active'); card.classList.add('done');
     actions.innerHTML='';
     if(s.explain) card.appendChild(el('div','why',s.explain));
@@ -659,9 +695,10 @@ function renderQ(){
   const body=el('div'); card.appendChild(body);
   const fb=el('div','fb'); fb.setAttribute('aria-live','polite'); card.appendChild(fb);
   const act=el('div','row'); card.appendChild(act);
-  let tries=0,locked=false;
+  let tries=0,locked=false;const qT=Date.now();
+  const qAns=()=>{try{return q.kind==='mc'?(q.options.find(o=>o.ok)||{}).t:q.kind==='build'?q.show.join(' '):q.kind==='units'?q.rows.map(r=>r.label+': '+r.ans).join('; '):''}catch(e){return ''}};
   const say=(c,h)=>{fb.className='fb '+c;fb.innerHTML=h};
-  const finish=()=>{ locked=true; card.classList.remove('active');card.classList.add('done');
+  const finish=()=>{ RVL.log({tp:'mf-'+tpl[0],qt:q.kind,m:QZ.round>1?'redo':'drill',q:q.prompt,a:qAns(),r:'tries '+tries,ok:tries?0:1,ms:Date.now()-qT,v:String(tpl[1])});locked=true; card.classList.remove('active');card.classList.add('done');
     if(tries){QZ.missed.push(tpl);if(QZ.round===1)QZ.weak.push(weakLabel(tpl))} else if(QZ.round===1)QZ.first++;
     QZ.res[QZ.i]=tries?'retry':'first';
     card.appendChild(el('div','why',q.explain));
@@ -746,10 +783,10 @@ function renderWord(){
   const fb=el('div','fb'); fb.setAttribute('aria-live','polite');
   const act=el('div','row');
   card.append(a,b,fb,act);
-  let ft=0, nt=0, locked=false;
+  let ft=0, nt=0, locked=false; const wT=Date.now();
   const say=(c,h)=>{fb.className='fb '+c;fb.innerHTML=h};
   const finish=(assisted)=>{ locked=true; card.classList.remove('active');card.classList.add('done');
-    const clean=!assisted&&ft===0&&nt===0; WQ.res[WQ.i]=clean?'first':'retry'; if(!clean) WQ.miss.push(p);
+    const clean=!assisted&&ft===0&&nt===0; WQ.res[WQ.i]=clean?'first':'retry'; RVL.log({tp:'mf-word',qt:'word',m:'wordquiz',q:plainText(p.text),a:(fs.options.find(o=>o.ok)||{}).t+' → '+(ns.round||r4(ns.ans))+' '+ns.unit,r:'formula tries '+ft+', answer tries '+nt+(assisted?', solution shown':''),ok:clean?1:0,ms:Date.now()-wT,v:p.genKey||''}); if(!clean) WQ.miss.push(p);
     const nx=el('button','btn',WQ.i+1<n?'Next problem':'See my score');nx.type='button';
     nx.onclick=()=>{WQ.i++;WQ.i<n?renderWord():endWord()}; act.innerHTML='';act.appendChild(nx);nx.focus()};
   shuffle(fs.options).forEach(o=>{const bt=el('button','opt',o.t);bt.type='button';
@@ -792,4 +829,5 @@ window.__app={get WQ(){return WQ},get cur(){return cur},GEN,REVIEW,MK,drillList}
 setProblem(REVIEW[0].make(),0);
 })();
 </script>
+<p id="rvnote" style="max-width:640px;margin:8px auto 28px;padding:0 16px;color:#55657F;font-size:14px" hidden>Your answers are saved so your parent can see what to practice.</p>
 </body></html>

@@ -85,6 +85,7 @@ input.ans{width:100%;font:500 20px var(--fb);padding:12px 14px;border-radius:10p
 <header class="top"><a class="brand" href="#home">Chapitre 4<small>Bon Voyage 1 · French I</small></a><nav id="nav" aria-label="Sections"></nav></header>
 <main class="wrap" id="view"></main>
 <p id="note" style="max-width:900px;margin:24px auto 0;color:var(--ink2);font-size:13px" hidden>Your answers are saved so your parent can see what to practice.</p>
+<script src="/rv-config.js"></script>
 <script>
 const $=(s,el=document)=>el.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -93,11 +94,12 @@ const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[
 const sample=(a,n)=>shuffle(a).slice(0,n);
 const pick=a=>a[rnd(a.length)];
 // ---- config: endpoint/token are filled in at publish time (empty = nothing leaves this device)
-const CFG={chapter:'ch4',endpoint:'',token:''};
+const CFG={chapter:'ch4',endpoint:(window.RVCFG||{}).endpoint||'',token:(window.RVCFG||{}).token||''};
 const KEY='fr1-ch4-review-v1';
 const uid=()=>Math.random().toString(36).slice(2,10);
 let S={box:{},stats:{},misses:[],best:null,hist:[],q:[],all:[],did:null};
 try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
+try{const g=localStorage.getItem('rv-did');if(g)S.did=g;else{if(!S.did)S.did=uid();localStorage.setItem('rv-did',S.did)}}catch(e){}
 if(!S.did)S.did=uid();
 const SID=uid();
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
