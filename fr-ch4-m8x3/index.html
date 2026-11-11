@@ -112,7 +112,7 @@ const strip=s=>s.toLowerCase().replace(/[’‘`´]/g,"'");
 const norm=s=>strip(s).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/-/g,' ').replace(/[^a-z0-9' ]/g,' ').replace(/\s+/g,' ').trim();
 const plain=s=>strip(s).replace(/-/g,' ').replace(/[.,?!;:"«»()]/g,' ').replace(/\s+/g,' ').trim();
 const stripEn=s=>norm(s).replace(/^(to|a|an|the)\s+/,'');
-const TOPICS={vocab:'Vocabulaire',avoir:'Avoir & il y a',poss:'Adjectifs possessifs',adj:'Beau, nouveau, vieux',read:'Lecture & conversation',culture:'Culture & logement',phrases:'Construire des phrases'};
+const TOPICS={vocab:'Vocabulaire',avoir:'Avoir & il y a',etav:'Être & avoir (Thursday quiz)',poss:'Adjectifs possessifs',adj:'Beau, nouveau, vieux',read:'Lecture & conversation',culture:'Culture & logement',phrases:'Construire des phrases'};
 const CATS={family:'La famille',party:"L'anniversaire",house:'La maison',rooms:'Les pièces',place:'Où? (lieux)',adjs:'Adjectifs',avoir:'Expressions avec avoir',bonus:'Bonus (dessins)'};
 // [fr, en, cat, note]
 const V=[
@@ -219,11 +219,11 @@ function checkType(q,input){let inp=input.trim();if(!inp)return 'no';
  const tryOne=x=>{const mk=q.mode==='en'?stripEn:norm;const n=mk(x);for(const a of q.answers)if(mk(a)===n)return plain(a)===plain(x)||q.mode==='en'?'ok':'accent';return null};
  let r=tryOne(inp);if(!r&&q.lead)r=tryOne(inp.replace(/^non[, ]+/i,''));return r||'no'}
 function ansText(q){return q.t==='mc'?q.options[q.ans]:q.show||q.answers[0]}
-function runQuiz({title,qs,back,test}){
- qs=qs.filter(Boolean);let i=0,right=0,res=[],answered=false,cur=null,t0=0,resp='';const mode=test?'test':(/revoir|misses/i.test(title)?'redo':'practice');const v=$('#view');
+function runQuiz({title,qs,back,test,nohist}){
+ qs=qs.filter(Boolean);let i=0,right=0,res=[],answered=false,cur=null,t0=0,resp='';const mode=test?(nohist?'quiz':'test'):(/revoir|misses/i.test(title)?'redo':'practice');const v=$('#view');
  document.onkeydown=null;
  function finish(){document.onkeydown=null;const pct=Math.round(100*right/qs.length);
-  if(test){const by={};res.forEach(r=>{const t=r.q.topic;(by[t]=by[t]||[0,0])[1]++;if(r.ok)by[t][0]++});S.hist.unshift({d:Date.now(),pct,n:qs.length});S.hist=S.hist.slice(0,8);if(S.best==null||pct>S.best)S.best=pct;save();var bt=Object.entries(by).map(([t,[a,b]])=>`<div class="mrow"><span>${TOPICS[t]}</span><div class="meter"><i style="width:${100*a/b}%"></i></div><span>${a}/${b}</span></div>`).join('')}
+  if(test){const by={};res.forEach(r=>{const t=r.q.topic;(by[t]=by[t]||[0,0])[1]++;if(r.ok)by[t][0]++});if(!nohist){S.hist.unshift({d:Date.now(),pct,n:qs.length});S.hist=S.hist.slice(0,8);if(S.best==null||pct>S.best)S.best=pct;save();}var bt=Object.entries(by).map(([t,[a,b]])=>`<div class="mrow"><span>${TOPICS[t]}</span><div class="meter"><i style="width:${100*a/b}%"></i></div><span>${a}/${b}</span></div>`).join('')}
   const miss=res.filter(r=>!r.ok);
   v.innerHTML=`<div class="card"><div class="eyebrow">${esc(title)}</div><div class="big">${right}/${qs.length}</div><p class="lead">${pct>=90?'Excellent. You are ready.':pct>=75?'Solid. Look at the misses below once more.':'Good practice. Redo the misses, then try again.'}</p>${bt?`<div style="display:grid;gap:8px;margin:12px 0">${bt}</div>`:''}<div class="row" style="margin-top:14px">${miss.length?'<button class="btn" id="again">Redo my misses</button>':''}<button class="btn ghost" id="bk">Back</button></div></div>${miss.length?`<div class="card"><h2>Review</h2><div class="scroll"><table><tr><th>Question</th><th>Answer</th></tr>${miss.map(r=>`<tr><td>${fmt(r.q.prompt)}</td><td><b>${esc(ansText(r.q))}</b></td></tr>`).join('')}</table></div></div>`:''}`;
   $('#bk').onclick=back;if($('#again'))$('#again').onclick=()=>runQuiz({title:'Redo misses',qs:miss.map(r=>r.q),back})}
@@ -248,7 +248,7 @@ function runQuiz({title,qs,back,test}){
   document.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();if(!go.hidden)go.click()}}}
  qs.length?show():back()}
 // ===== pages =====
-const NAV=[['home','Accueil'],['vocab','Vocabulaire'],['avoir','Avoir'],['poss','Possessifs'],['adj','Adjectifs'],['read','Lecture'],['culture','Culture'],['phrases','Phrases'],['test','Test'],['weak','À revoir']];
+const NAV=[['home','Accueil'],['vocab','Vocabulaire'],['avoir','Avoir'],['etav','Être & avoir'],['poss','Possessifs'],['adj','Adjectifs'],['read','Lecture'],['culture','Culture'],['phrases','Phrases'],['test','Test'],['weak','À revoir']];
 function badge(){const n=$('#nav');if(!n)return;const cur=(location.hash||'#home').slice(1);n.innerHTML=NAV.map(([h,l])=>`<a href="#${h}" class="${h===cur?'on':''}">${l}${h==='weak'&&S.misses.length?`<span class="bd">${S.misses.length}</span>`:''}</a>`).join('')}
 const view=()=>$('#view');
 const known=()=>V.filter(v=>(S.box[v.id]||0)>=2).length;
@@ -257,9 +257,9 @@ const acc=t=>{const s=S.stats[t];return s&&s.total?Math.round(100*s.right/s.tota
 const head=(e,t,l)=>`<div><div class="eyebrow">${e}</div><h1>${t}</h1><p class="lead">${l}</p></div>`;
 const modeBtn=(id,t,d)=>`<button class="mode" id="${id}"><b>${t}</b><span>${d}</span></button>`;
 const P={};
-P.home=()=>{const plan=[['#avoir','Avoir & il y a','Conjugate avoir, ages, il y a, avoir faim / froid…',10,tot('avoir')>=20],['#vocab','Vocabulaire','Family, birthday, house, rooms. Flashcards until cards turn “known”.',20,known()>=70],['#poss','Adjectifs possessifs','mon / ma / mes … leur / leurs. Agree with the thing owned.',10,tot('poss')>=20],['#adj','Beau, nouveau, vieux','BRAGS adjectives, bel / nouvel / vieil, plurals.',10,tot('adj')>=20],['#read','Lecture & conversation','Vincent, Rémi, Van Gogh’s bedroom, the Duval family.',7,tot('read')>=12],['#test','Test blanc','Full mock test, about 45 questions.',15,S.best!=null],['#weak','À revoir','Clear every question you missed.',5,S.misses.length===0&&Object.keys(S.stats).length>0]];
+P.home=()=>{const plan=[['#avoir','Avoir & il y a','Conjugate avoir, ages, il y a, avoir faim / froid…',10,tot('avoir')>=20],['#vocab','Vocabulaire','Family, birthday, house, rooms. Flashcards until cards turn “known”.',20,known()>=70],['#etav','Être & avoir (Thursday quiz)','The teacher’s sheet: what être and avoir are used for.',15,tot('etav')>=25],['#poss','Adjectifs possessifs','mon / ma / mes … leur / leurs. Agree with the thing owned.',10,tot('poss')>=20],['#adj','Beau, nouveau, vieux','BRAGS adjectives, bel / nouvel / vieil, plurals.',10,tot('adj')>=20],['#read','Lecture & conversation','Vincent, Rémi, Van Gogh’s bedroom, the Duval family.',7,tot('read')>=12],['#test','Test blanc','Full mock test, about 45 questions.',15,S.best!=null],['#weak','À revoir','Clear every question you missed.',5,S.misses.length===0&&Object.keys(S.stats).length>0]];
  view().innerHTML=`${head('Bon Voyage 1 · Chapitre 4','La famille et la maison','Everything for the test, built from your worksheets, puzzles, quizzes and textbook chapter. Every answer is checked for you and explained, so you can study on your own.')}
- <div class="card"><h2>Study plan (about 75 minutes)</h2><ol class="plan" style="margin-top:12px">${plan.map(p=>`<li class="${p[4]?'done':''}"><a href="${p[0]}"><span class="ck">${p[4]?'✓':''}</span><span><b>${p[1]}</b><br><span style="color:var(--ink2);font-size:14px">${p[2]}</span></span><span class="min">${p[3]} min</span></a></li>`).join('')}</ol></div>
+ <div class="card"><h2>Study plan (about 90 minutes)</h2><ol class="plan" style="margin-top:12px">${plan.map(p=>`<li class="${p[4]?'done':''}"><a href="${p[0]}"><span class="ck">${p[4]?'✓':''}</span><span><b>${p[1]}</b><br><span style="color:var(--ink2);font-size:14px">${p[2]}</span></span><span class="min">${p[3]} min</span></a></li>`).join('')}</ol></div>
  <div class="card"><h2>How you’re doing</h2><div style="display:grid;gap:10px;margin-top:12px"><div class="mrow"><span>Vocabulaire connu</span><div class="meter"><i style="width:${100*known()/V.length}%"></i></div><span>${known()}/${V.length}</span></div>${Object.keys(TOPICS).map(t=>`<div class="mrow"><span>${TOPICS[t]}</span><div class="meter"><i style="width:${acc(t)}%"></i></div><span>${tot(t)?acc(t)+'%':'–'}</span></div>`).join('')}</div><p style="color:var(--ink2);font-size:14px;margin-top:12px">${S.best!=null?`Best mock test: <b>${S.best}%</b>. `:''}Percentages show how many answers you got right so far.</p></div>`};
 // ---- vocab
 let vcat='all',vdir='fe';
@@ -325,6 +325,121 @@ P.weak=()=>{const m=S.misses;view().innerHTML=`${head('À revoir',m.length?m.len
  if(m.length){$('#go').onclick=()=>runQuiz({title:'À revoir',qs:shuffle(m).slice(0,20),back:P.weak});$('#clr').onclick=()=>{S.misses=[];save();P.weak();badge()}}};
 P.export=()=>{const data=JSON.stringify({chapter:CFG.chapter,events:S.all});view().innerHTML=`${head('Export','Progress report','Use this only if a parent asks you to send your results. Copy the text below.')}<div class="card"><textarea id="ex" readonly style="width:100%;height:160px;font:12px monospace;background:var(--card);color:var(--ink);border:1px solid var(--rule);border-radius:8px;padding:8px">${esc(data)}</textarea><div class="row" style="margin-top:10px"><button class="btn" id="cp">Copy</button><span id="cm" style="color:var(--ink2)"></span></div></div>`;$('#cp').onclick=()=>{const t=$('#ex');t.select();try{navigator.clipboard.writeText(t.value).then(()=>$('#cm').textContent='Copied.',()=>$('#cm').textContent='Press Ctrl+C to copy.')}catch(e){$('#cm').textContent='Press Ctrl+C to copy.'}}};
 function route(){document.onkeydown=null;const h=(location.hash||'#home').slice(1);(P[h]||P.home)();badge();window.scrollTo(0,0);const n=$('#note');if(n)n.hidden=!CFG.endpoint}
+/* ===== Être & avoir (teacher's sheet "J'utilise le verbe être / avoir pour…") ===== */
+const EF={e:{je:'suis',tu:'es',il:'est',elle:'est',on:'est',nous:'sommes',vous:'êtes',ils:'sont',elles:'sont'},a:{je:'ai',tu:'as',il:'a',elle:'a',on:'a',nous:'avons',vous:'avez',ils:'ont',elles:'ont'}};
+const EV={e:'être',a:'avoir'};
+const PRON=['je','tu','il','elle','on','nous','vous','ils','elles'];
+const apo=a=>/'|’/.test(a)?[a,a.replace(/['’]/g,' ')]:[a];
+const fullF=(v,k)=>v==='a'&&k==='je'?"j'ai":k+' '+EF[v][k];
+const LAB={name:'être · your name',nat:'être · nationality',job:'être · job',sit:'être · personal situation',mood:'être · mood / feeling',loc:'être · where you are',desc:'être · looks / personality',age:'avoir · age',belong:'avoir · what you have',sens:'avoir · sensations (cold, hungry…)',phys:'avoir · eyes, hair, beard'};
+const EXP={name:'Your name uses être: Je suis Édouard.',nat:'Nationality uses être: Je suis français.',job:'A job uses être, with no article: Je suis étudiant.',sit:'Personal situation uses être: Je suis célibataire.',mood:'A mood or feeling uses être: Je suis content.',loc:'Where someone is uses être: Je suis à Paris.',desc:'Describing looks or personality uses être: Je suis grand.',age:'Age uses avoir, not être: J’ai 25 ans.',belong:'Having something uses avoir: J’ai un chien.',sens:'Sensations use avoir: J’ai froid, j’ai faim. English says “to be”, French says “to have”.',phys:'Hair, eyes and a beard use avoir: J’ai les yeux bleus.'};
+// [subject, key, verb(e/a), rest, category]
+const POOL=[
+['Je','je','e','Édouard.','name'],['Elle','elle','e','Marie.','name'],['Tu','tu','e','Leroy ?','name'],
+['Tu','tu','e','mexicain ?','nat'],['Nous','nous','e','français.','nat'],['Ils','ils','e','canadiens.','nat'],['Vous','vous','e','japonais ?','nat'],['Elle','elle','e','allemande.','nat'],['Je','je','e','colombien.','nat'],['Elles','elles','e','chiliennes.','nat'],
+['Je','je','e','étudiant.','job'],['Tu','tu','e','avocat ?','job'],['Mon père','il','e','ingénieur.','job'],['Nous','nous','e','professeurs.','job'],['Elles','elles','e','infirmières.','job'],['Vous','vous','e','médecin ?','job'],['Il','il','e','cuisinier.','job'],['Elle','elle','e','architecte.','job'],
+['Je','je','e','célibataire.','sit'],['Ils','ils','e','mariés.','sit'],['Elle','elle','e','divorcée.','sit'],['Nous','nous','e','en couple.','sit'],['Tu','tu','e','dans une relation ?','sit'],
+['Tu','tu','e','content ?','mood'],['Je','je','e','fatigué.','mood'],['Elles','elles','e','heureuses.','mood'],['Marc','il','e','stressé.','mood'],['Nous','nous','e','tristes.','mood'],['Il','il','e','ennuyé.','mood'],['Vous','vous','e','amoureux ?','mood'],
+['Nous','nous','e','dans la salle.','loc'],['Vous','vous','e','à l’école ?','loc'],['Ils','ils','e','à Paris.','loc'],['Je','je','e','au Mexique.','loc'],['Elle','elle','e','en France.','loc'],['Tu','tu','e','à Mexico ?','loc'],
+['Tu','tu','e','grand.','desc'],['Ma sœur','elle','e','timide.','desc'],['Nous','nous','e','patients.','desc'],['Les garçons','ils','e','drôles.','desc'],['Je','je','e','petit.','desc'],['Elle','elle','e','intelligente.','desc'],['Il','il','e','poli.','desc'],['Vous','vous','e','sérieux ?','desc'],
+['Je','je','a','25 ans.','age'],['Tu','tu','a','quinze ans ?','age'],['Ma mère','elle','a','quarante ans.','age'],['Nous','nous','a','douze ans.','age'],['Elle','elle','a','seize ans.','age'],['Ils','ils','a','dix ans.','age'],
+['Nous','nous','a','une maison.','belong'],['Vous','vous','a','un chien ?','belong'],['Ils','ils','a','une voiture.','belong'],['Elle','elle','a','un téléphone.','belong'],['Je','je','a','un frère.','belong'],
+['Je','je','a','froid.','sens'],['Tu','tu','a','chaud ?','sens'],['Il','il','a','soif.','sens'],['Nous','nous','a','faim.','sens'],['Vous','vous','a','sommeil ?','sens'],['Elles','elles','a','peur.','sens'],['Je','je','a','honte.','sens'],['Tu','tu','a','envie de manger ?','sens'],
+['Elle','elle','a','les yeux bleus.','phys'],['Il','il','a','les cheveux blancs.','phys'],['Mon père','il','a','une barbe.','phys'],['Nous','nous','a','les yeux marron.','phys'],['Ils','ils','a','les cheveux bruns.','phys'],['Vous','vous','a','les yeux bleus ?','phys']];
+const subjT=(s,k,v)=>s==='Je'&&v==='a'?'J’':s;
+const blankS=r=>`${subjT(r[0],r[1],r[2])}___ ${r[3]}`;
+const fullS=r=>{const f=EF[r[2]][r[1]];return r[0]==='Je'&&r[2]==='a'?`J’${f} ${r[3]}`:`${r[0]} ${f} ${r[3]}`};
+const etavMC=n=>sample(POOL,n).map(r=>{const [s,k,v,rest,cat]=r,o=v==='e'?'a':'e',good=EF[v][k];const same=[...new Set(PRON.map(p=>EF[v][p]))].filter(x=>x!==good);
+ return MC('etav',blankS(r),good,[EF[o][k],pick(same)],EXP[cat]+(k==='je'||s?'':''),'Pick the right form of être or avoir.')});
+const etavUse=n=>sample(POOL,n).map(r=>{const labs=Object.keys(LAB).filter(c=>c!==r[4]);const w=sample(labs,3);return MC('etav',fullS(r),LAB[r[4]],w.map(c=>LAB[c]),EXP[r[4]],'Why this verb? Pick the use.')});
+const etavFill=n=>sample(POOL,n).map(r=>{const [s,k,v]=r,f=EF[v][k];let a=[f];if(PRON.includes(s.toLowerCase()))a=a.concat(apo(fullF(v,k)));return TY('etav',blankS(r),a,EXP[r[4]],'Type the correct form of '+EV[v]+'.')});
+const etavConj=n=>Array.from({length:n},()=>{const v=pick(['e','a']),k=pick(PRON);return TY('etav',`${EV[v]} + ${k}`,[EF[v][k]].concat(apo(fullF(v,k))),`${EV[v]}: `+Object.entries({je:EF[v].je,tu:EF[v].tu,'il/elle/on':EF[v].il,nous:EF[v].nous,vous:EF[v].vous,'ils/elles':EF[v].ils}).map(([a,b])=>(v==='a'&&a==='je'?'j’':a+' ')+b).join(', ')+'.','Conjugate (you may type just the verb or the whole phrase).')});
+// English → French  [en, answers, category]
+const SAY=[
+["I am Canadian.",["je suis canadien","je suis canadienne"],'nat'],["We are French.",["nous sommes français","nous sommes françaises"],'nat'],["You (tu) are Mexican.",["tu es mexicain","tu es mexicaine"],'nat'],["They (m.) are Japanese.",["ils sont japonais"],'nat'],["She is German.",["elle est allemande"],'nat'],
+["He is a lawyer.",["il est avocat"],'job'],["I am an engineer.",["je suis ingénieur","je suis ingénieure"],'job'],["We are teachers.",["nous sommes professeurs"],'job'],["She is a nurse.",["elle est infirmière"],'job'],["You (vous) are a doctor.",["vous êtes médecin"],'job'],["I am a student.",["je suis étudiant","je suis étudiante"],'job'],
+["I am single.",["je suis célibataire"],'sit'],["They (m.) are married.",["ils sont mariés"],'sit'],["She is divorced.",["elle est divorcée"],'sit'],
+["He is happy.",["il est heureux","il est content","il est joyeux"],'mood'],["I am tired.",["je suis fatigué","je suis fatiguée"],'mood'],["She is sad.",["elle est triste"],'mood'],["We are stressed.",["nous sommes stressés","nous sommes stressées"],'mood'],
+["I am in the room (la salle).",["je suis dans la salle"],'loc'],["They (f.) are in France.",["elles sont en France"],'loc'],["You (vous) are in Paris.",["vous êtes à Paris"],'loc'],["He is at school.",["il est à l'école"],'loc'],["I am in Mexico.",["je suis au Mexique"],'loc'],
+["You (tu) are tall.",["tu es grand","tu es grande"],'desc'],["She is shy.",["elle est timide"],'desc'],["They (m.) are funny.",["ils sont drôles"],'desc'],["He is serious.",["il est sérieux"],'desc'],
+["I am 25 years old.",["j'ai 25 ans","j'ai vingt-cinq ans"],'age'],["She is fifteen.",["elle a quinze ans"],'age'],
+["We have a house.",["nous avons une maison"],'belong'],["You (tu) have a dog.",["tu as un chien"],'belong'],["He has a brother.",["il a un frère"],'belong'],["They (m.) have a car.",["ils ont une voiture"],'belong'],
+["I am cold.",["j'ai froid"],'sens'],["She is hot.",["elle a chaud"],'sens'],["We are thirsty.",["nous avons soif"],'sens'],["He is hungry.",["il a faim"],'sens'],["You (vous) are sleepy.",["vous avez sommeil"],'sens'],["They (f.) are afraid.",["elles ont peur"],'sens'],["I am ashamed.",["j'ai honte"],'sens'],["I feel like eating.",["j'ai envie de manger"],'sens'],
+["She has blue eyes.",["elle a les yeux bleus"],'phys'],["He has brown hair.",["il a les cheveux bruns"],'phys'],["My father has a beard.",["mon père a une barbe"],'phys'],["We have brown eyes.",["nous avons les yeux marron"],'phys'],["She has white hair.",["elle a les cheveux blancs"],'phys']
+].map(([en,a,c])=>TY('etav',en,a.flatMap(apo),EXP[c],'Say it in French.',{mode:'fr'}));
+// make it negative [affirmative, negative]
+const NEGE=[["Je suis fatigué.","je ne suis pas fatigué"],["Tu es content.","tu n'es pas content"],["Il est étudiant.","il n'est pas étudiant"],["Nous sommes mariés.","nous ne sommes pas mariés"],["Elles sont en France.","elles ne sont pas en France"],["Il est grand.","il n'est pas grand"],["Je suis célibataire.","je ne suis pas célibataire"],
+["J'ai faim.","je n'ai pas faim"],["Tu as froid.","tu n'as pas froid"],["Il a peur.","il n'a pas peur"],["Nous avons sommeil.","nous n'avons pas sommeil"],["J'ai un chien.","je n'ai pas de chien"],["Elle a une barbe.","elle n'a pas de barbe"],["Ils ont une voiture.","ils n'ont pas de voiture"],["Vous avez les yeux bleus.","vous n'avez pas les yeux bleus"]]
+.map(([p,a])=>TY('etav',p,apo(a),a.includes(' de ')||a.includes(" d'")?'After a negative, un / une / des become de (d’): je n’ai pas de chien.':'Put ne / n’ before the verb and pas after it. Les / le / la stay the same, and être never changes to de.','Make it negative.'));
+// tiles [en, fr, extra tile]
+const ETL=[["I am a student.","Je suis étudiant.",["es"]],["She is Canadian.","Elle est canadienne.",["a"]],["We are in Paris.","Nous sommes à Paris.",["avons"]],["I am 25 years old.","J'ai 25 ans.",["suis"]],["He is hungry.","Il a faim.",["est"]],["They have a dog.","Ils ont un chien.",["sont"]],["You (tu) are shy.","Tu es timide.",["as"]],["She has blue eyes.","Elle a les yeux bleus.",["est"]],["We are tired.","Nous sommes fatigués.",["avons"]],["I am afraid.","J'ai peur.",["suis"]],["He has a beard.","Il a une barbe.",["est"]],["You (vous) are in France.","Vous êtes en France.",["avez"]],["My brother is single.","Mon frère est célibataire.",["a"]],["They (m.) are married.","Ils sont mariés.",["ont"]]]
+.map(([en,fr,x])=>TL('etav',en,fr,x,'Check the verb: être for who / where / what someone is like; avoir for age, things, sensations, eyes and hair.'));
+// vocabulary from the sheet:  "fr/variants|en/variants|cat"
+const VW=("Édouard|Edward (a first name)|name;"+
+"mexicain/mexicaine|Mexican|nat;colombien/colombienne|Colombian|nat;français/française|French|nat;chilien/chilienne|Chilean|nat;canadien/canadienne|Canadian|nat;japonais/japonaise|Japanese|nat;allemand/allemande|German|nat;"+
+"étudiant/étudiante|student|job;ingénieur/ingénieure|engineer|job;cuisinier/cuisinière|cook|job;avocat/avocate|lawyer|job;professeur/professeure|teacher|job;architecte|architect|job;informaticien/informaticienne|computer scientist|job;infirmier/infirmière|nurse|job;médecin|doctor|job;"+
+"célibataire|single|sit;dans une relation|in a relationship|sit;marié/mariée|married|sit;en couple|in a couple|sit;divorcé/divorcée|divorced|sit;"+
+"content/contente|pleased / happy|mood;heureux/heureuse|happy|mood;joyeux/joyeuse|joyful|mood;triste|sad|mood;stressé/stressée|stressed|mood;fatigué/fatiguée|tired|mood;ennuyé/ennuyée|bored|mood;amoureux/amoureuse|in love|mood;"+
+"dans la salle|in the room|loc;à l'école|at school|loc;en France|in France|loc;au Mexique|in Mexico|loc;à Mexico|in Mexico City|loc;à Paris|in Paris|loc;"+
+"grand/grande|tall|desc;petit/petite|short / small|desc;mince|slim|desc;maigre|thin|desc;gros/grosse|big / heavy|desc;intelligent/intelligente|intelligent|desc;drôle|funny|desc;patient/patiente|patient|desc;sérieux/sérieuse|serious|desc;gentil/gentille|nice / kind|desc;poli/polie|polite|desc;timide|shy|desc;fou/folle|crazy|desc;"+
+"avoir froid|to be cold|sens;avoir chaud|to be hot|sens;avoir soif|to be thirsty|sens;avoir faim|to be hungry|sens;avoir sommeil|to be sleepy|sens;avoir peur|to be afraid|sens;avoir honte|to be ashamed|sens;avoir envie de|to feel like / to want to|sens;"+
+"les yeux marron|brown eyes|phys;les yeux bleus|blue eyes|phys;les cheveux bruns|brown hair|phys;les cheveux blancs|white hair|phys;une barbe|a beard|phys;"+
+"une maison|a house|belong;un chien|a dog|belong;un frère|a brother|belong;une voiture|a car|belong;un téléphone|a phone|belong").split(';').filter(x=>!x.startsWith('Édouard')).map(s=>{const [f,e,c]=s.split('|');return {fr:f.split('/'),en:e.split(' / '),cat:c}});
+const VWL={nat:'nationality',job:'job',sit:'personal situation',mood:'mood',loc:'place',desc:'description',sens:'sensation (avoir!)',phys:'physical feature (avoir)',belong:'belonging (avoir)'};
+const syn=(a,b)=>a.en.some(e=>b.en.includes(e));
+const vwMC=n=>sample(VW,n).map(w=>{const same=VW.filter(x=>x!==w&&x.cat===w.cat&&!syn(w,x)),other=VW.filter(x=>x.cat!==w.cat&&!syn(w,x));const pool=shuffle(same).slice(0,3);while(pool.length<3)pool.push(pick(other));return MC('etav',w.fr[0],w.en[0],pool.map(x=>x.en[0]),`${w.fr[0]} = ${w.en[0]} (${VWL[w.cat]}).`,'What does it mean?')});
+const vwTy=n=>sample(VW,n).map(w=>{const ans=[];VW.filter(x=>syn(w,x)).forEach(x=>x.fr.forEach(f=>{ans.push(f);const s=f.replace(/^(un|une|les|le|la|l')\s*/,'');if(s!==f)ans.push(s)}));return TY('etav',w.en[0],ans.flatMap(apo),`${w.fr[0]}${w.fr[1]?' (fem. '+w.fr[1]+')':''} = ${w.en[0]} (${VWL[w.cat]}).`,'Say it in French.',{show:w.fr[0]})});
+// make it agree (extra)
+const AGR=[["Elle est ___. (mexicain)","mexicaine"],["Marie est ___. (canadien)","canadienne"],["Elle est ___. (français)","française"],["Ma mère est ___. (japonais)","japonaise"],["Elle est ___. (allemand)","allemande"],["Ma sœur est ___. (chilien)","chilienne"],["Elle est ___. (colombien)","colombienne"],["Elle est ___. (étudiant)","étudiante"],["Elle est ___. (infirmier)","infirmière"],["Elle est ___. (cuisinier)","cuisinière"],["Elle est ___. (marié)","mariée"],["Elle est ___. (divorcé)","divorcée"],["Elle est ___. (fatigué)","fatiguée"],["Elle est ___. (sérieux)","sérieuse"],["Elle est ___. (gentil)","gentille"],["Elle est ___. (amoureux)","amoureuse"],["Elle est ___. (patient)","patiente"],["Elles sont ___. (japonais)","japonaises"],["Ils sont ___. (français)","français"],["Elles sont ___. (heureux)","heureuses"],["Ils sont ___. (sérieux)","sérieux"],["Ils sont ___. (canadien)","canadiens"]]
+.map(([p,a])=>TY('etav',p,a,'Extra practice: adjectives agree with the person (feminine adds -e, plural adds -s). Words already ending in -s or -x stay the same in the masculine plural.','Make the adjective agree.'));
+const ETAVR=[
+MC('etav','How do you say “I am 25 years old”?',"J'ai 25 ans.",["Je suis 25 ans.","Je suis 25 années.","J'ai 25 année."],'Age uses avoir. French says “I have 25 years”.'),
+MC('etav','How do you say “I am hungry”?',"J'ai faim.",["Je suis faim.","Je suis de la faim.","J'ai de faim."],'Hunger is a sensation, so French uses avoir: j’ai faim.'),
+MC('etav','How do you say “She is cold”?',"Elle a froid.",["Elle est froid.","Elle est froide.","Elle a froide."],'Sensations (froid, chaud, soif, faim, sommeil, peur, honte) use avoir.'),
+MC('etav','Which verb gives your nationality?','être',['avoir','aller','faire'],'Je suis mexicain. Nationality uses être.'),
+MC('etav','Which verb gives your job?','être',['avoir','aller','faire'],'Je suis ingénieur. Use être with no article: je suis étudiant.'),
+MC('etav','Which verb describes someone’s eyes and hair?','avoir',['être','aller','faire'],'Elle a les yeux bleus. Il a les cheveux blancs. Avoir.'),
+MC('etav','Which verb gives your age?','avoir',['être','aller','faire'],'Avoir: tu as quel âge ? J’ai quinze ans.'),
+MC('etav','Which verb tells where you are?','être',['avoir','aller','faire'],'Je suis à l’école. Je suis en France.'),
+MC('etav','Which verb tells whether you are single or married?','être',['avoir','aller','faire'],'Je suis célibataire. Je suis marié.'),
+MC('etav','Which verb tells what you own (a dog, a house, a phone)?','avoir',['être','aller','faire'],"J'ai un chien. J'ai une maison."),
+MC('etav','Which sentence is correct?',"Il est grand.",["Il a grand.","Il est un grand.","Il a grande."],'Tall is a description of looks, so être.'),
+MC('etav','Which sentence is correct?',"Elle a les yeux bleus.",["Elle est les yeux bleus.","Elle a des yeux est bleus.","Elle a yeux bleu."],'Eyes and hair use avoir.'),
+MC('etav','Which sentence is correct?',"J'ai peur.",["Je suis peur.","Je suis peureux de.","J'ai de peur."],'Avoir peur = to be afraid.'),
+MC('etav','Which sentence is correct?',"Elle est dans la salle.",["Elle a dans la salle.","Elle est la salle.","Elle ont dans la salle."],'Location uses être: dans la salle, à l’école, en France, à Paris.'),
+MC('etav','Which sentence is correct?',"Je suis au Mexique.",["J'ai au Mexique.","Je suis en Mexique.","Je suis à Mexique."],'Au Mexique (le Mexique is masculine). En France, à Paris.'),
+MC('etav','Which sentence is correct?',"Nous sommes fatigués.",["Nous avons fatigués.","Nous sommes fatigue.","Nous êtes fatigués."],'A mood or state of mind uses être.'),
+MC('etav','Which is correct?',"Je n'ai pas de chien.",["Je n'ai pas un chien.","Je ne ai pas de chien.","Je n'ai pas des chien."],'After a negative, un / une / des become de (d’). J’ai → je n’ai pas.'),
+MC('etav','Which is correct?',"Il n'est pas grand.",["Il n'a pas grand.","Il ne est pas grand.","Il n'est pas de grand."],'Être stays être in the negative. Put n’ before the vowel: n’est.'),
+MC('etav','Which is correct?',"Tu as quinze ans.",["Tu es quinze ans.","Tu as quinze.","Tu a quinze ans."],'Tu → as.'),
+MC('etav','Which is correct?',"Ils ont les cheveux bruns.",["Ils sont les cheveux bruns.","Ils ont les cheveux brun.","Il ont les cheveux bruns."],'Plural subject → ont. Cheveux is plural, so bruns takes an -s.'),
+MC('etav','What does “avoir envie de” mean?','to feel like / to want to',['to be afraid of','to need','to be ashamed of'],'J’ai envie de manger = I feel like eating.'),
+MC('etav','Which form goes with vous?','vous êtes',['vous sont','vous avons','vous ont'],'Être: vous êtes. (Avoir: vous avez.)'),
+MC('etav','Which form goes with nous (être)?','nous sommes',['nous êtes','nous avons','nous sont'],'Être: nous sommes. (Avoir: nous avons.)')
+];
+/* ---- page ---- */
+const tr=(a,b,c)=>`<tr><td><b>${a}</b></td><td>${b}</td>${c!=null?`<td>${c}</td>`:''}</tr>`;
+P.etav=()=>{view().innerHTML=`${head('Grammaire','Être & avoir','From your teacher’s sheet: what each verb is used for. Quiz on Thursday.')}
+ <details open><summary>Learn it: the two verbs</summary><div><div class="grid"><div class="scroll"><table><tr><th colspan="2">être (to be)</th></tr><tr><td>je</td><td><b>suis</b></td></tr><tr><td>tu</td><td><b>es</b></td></tr><tr><td>il / elle / on</td><td><b>est</b></td></tr><tr><td>nous</td><td><b>sommes</b></td></tr><tr><td>vous</td><td><b>êtes</b></td></tr><tr><td>ils / elles</td><td><b>sont</b></td></tr></table></div><div class="scroll"><table><tr><th colspan="2">avoir (to have)</th></tr><tr><td>j’</td><td><b>ai</b></td></tr><tr><td>tu</td><td><b>as</b></td></tr><tr><td>il / elle / on</td><td><b>a</b></td></tr><tr><td>nous</td><td><b>avons</b></td></tr><tr><td>vous</td><td><b>avez</b></td></tr><tr><td>ils / elles</td><td><b>ont</b></td></tr></table></div></div></div></details>
+ <details open><summary>J’utilise le verbe ÊTRE pour…</summary><div class="scroll"><table><tr><th>Use</th><th>Examples</th></tr>
+ ${tr('Le prénom (name)','<i>Je suis Édouard et mon nom est Leroy.</i>')}
+ ${tr('La nationalité','<i>Je suis</i> mexicain, colombien, français, chilien, canadien, japonais, allemand…')}
+ ${tr('Le métier (job)','<i>Je suis</i> étudiant, ingénieur, cuisinier, avocat, professeur, architecte, informaticien, infirmier, médecin…')}
+ ${tr('La situation personnelle','<i>Je suis</i> célibataire, dans une relation, marié, en couple, divorcé…')}
+ ${tr('L’état d’esprit (mood)','<i>Je suis</i> content, heureux, joyeux, triste, stressé, fatigué, ennuyé, amoureux…')}
+ ${tr('La localisation (where)','<i>Je suis</i> dans la salle, à l’école, en France, au Mexique, à Mexico, à Paris…')}
+ ${tr('La description physique et morale','<i>Je suis</i> grand, petit, mince, maigre, gros, intelligent, drôle, patient, sérieux, gentil, poli, timide, fou…')}
+ </table></div></details>
+ <details open><summary>J’utilise le verbe AVOIR pour…</summary><div class="scroll"><table><tr><th>Use</th><th>Examples</th></tr>
+ ${tr('L’âge','<i>J’ai 25 ans.</i>')}
+ ${tr('L’appartenance (what you have)','<i>J’ai</i> une maison, un chien, un frère, une voiture, un téléphone…')}
+ ${tr('Les sensations','<i>J’ai</i> froid, chaud, soif, faim, sommeil, peur, honte, envie (de)…')}
+ ${tr('Les particularités physiques','<i>J’ai</i> les yeux marron, les yeux bleus, les cheveux bruns, les cheveux blancs, une barbe…')}
+ </table></div></details>
+ <details open><summary>Watch out: English “to be” is not always être</summary><div><ul class="facts"><li><b>Age:</b> <i>J’ai 25 ans.</i> (Not “je suis 25 ans”.)</li><li><b>Sensations</b> (cold, hot, thirsty, hungry, sleepy, afraid, ashamed): <i>J’ai froid, j’ai faim, j’ai peur.</i></li><li><b>Looks:</b> <i>Je suis grand</i> (être, a description), but <i>j’ai les yeux bleus</i> (avoir, eyes and hair).</li><li><b>Job:</b> no article after être: <i>Je suis étudiant.</i> <i>Elle est avocate.</i></li><li><b>Where:</b> <i>à</i> + city (à Paris, à Mexico), <i>en</i> + feminine country (en France), <i>au</i> + masculine country (au Mexique), <i>dans</i> + room (dans la salle).</li><li><b>Adjectives agree:</b> il est content, elle est contente. Nationalities and jobs agree too: il est mexicain, elle est mexicaine.</li><li><b>Negative:</b> je ne suis pas…, je n’ai pas… After a negative, <i>un / une / des</i> become <i>de / d’</i>: <i>je n’ai pas de chien</i>. Être never takes de.</li><li><b>Eyes and hair:</b> les yeux marron, les yeux bleus, les cheveux bruns, les cheveux blancs. Colours agree with the plural noun; <i>marron</i> stays as written on the sheet.</li></ul></div></details>
+ <div class="grid">${mm('a','Être or avoir?','Je ___ 25 ans → ai (15)')}${mm('b','What is it used for?','Je suis étudiant → job (12)')}${mm('c','Conjugate','être / avoir + pronoun (12)')}${mm('d','Fill in the verb','Nous ___ à Paris (14)')}${mm('e','Say it in French','I am cold → J’ai froid (14)')}${mm('f','Make it negative','J’ai un chien → je n’ai pas de chien (10)')}${mm('g','Build the sentence','Tap the words (8)')}${mm('h','Sheet words: French → English','célibataire, avoir peur… (15)')}${mm('i','Sheet words: English → French','to be thirsty → avoir soif (15)')}${mm('j','Make it agree','Elle est (mexicain) → mexicaine (10)')}${mm('k','Rules','Which verb? Which form? (10)')}${mm('l','Practice quiz (no hints)','28 mixed questions, answers at the end')}</div>`;
+ const g=runner(P.etav);g('#a','Être ou avoir ?',()=>etavMC(15));g('#b','À quoi ça sert ?',()=>etavUse(12));g('#c','Conjugaison',()=>etavConj(12));g('#d','Complète',()=>etavFill(14));g('#e','En français',()=>sample(SAY,14));g('#f','Négation',()=>sample(NEGE,10));g('#g','Phrases',()=>sample(ETL,8));g('#h','Mots',()=>vwMC(15));g('#i','Mots',()=>vwTy(15));g('#j','Accord',()=>sample(AGR,10));g('#k','Règles',()=>sample(ETAVR,10));
+ $('#l').onclick=()=>runQuiz({title:'Practice quiz',qs:[].concat(etavMC(6),etavFill(5),etavUse(4),sample(SAY,5),sample(NEGE,3),vwMC(3),sample(ETL,2)),back:P.etav,test:1,nohist:1})};
 addEventListener('hashchange',route);route();
 </script>
 
